@@ -494,6 +494,7 @@ body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI
   </div>
   <div class="db-btns">
     <button class="btn-primary" id="db-other-btn" onclick="playOtherSide()">Play defender side →</button>
+    <button class="btn-primary" style="background:var(--purple)" onclick="openCert()">🎓 Get certificate</button>
     <button class="btn-secondary" onclick="show('s-intro')">Choose another scenario</button>
   </div>
 </div>
@@ -1420,6 +1421,15 @@ function drawCertificate(){
   const acc=totalAnswered>0?Math.round(totalCorrect/totalAnswered*100):0;
   const date=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
+  function rrect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+
   // Background
   ctx.fillStyle='#0f1117';ctx.fillRect(0,0,W,H);
 
@@ -1427,74 +1437,87 @@ function drawCertificate(){
   ctx.fillStyle='#2a2d3a';
   for(let x=20;x<W;x+=28)for(let y=20;y<H;y+=28){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}
 
-  // Border frame
+  // Border frames
   ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;ctx.strokeRect(20,20,W-40,H-40);
-  ctx.strokeStyle='#4d9fff44';ctx.lineWidth=0.5;ctx.strokeRect(28,28,W-56,H-56);
+  ctx.strokeStyle='rgba(77,159,255,0.25)';ctx.lineWidth=0.5;ctx.strokeRect(28,28,W-56,H-56);
 
-  // Top accent line
+  // Top accent bar
   ctx.fillStyle='#4d9fff';ctx.fillRect(20,20,W-40,3);
 
   // Logo
-  ctx.fillStyle='#e2e4ed';ctx.font='700 13px -apple-system,sans-serif';
-  ctx.letterSpacing='4px';ctx.textAlign='center';ctx.fillText('⬡  PARALLAX',W/2,72);
-  ctx.letterSpacing='0px';
+  ctx.fillStyle='#e2e4ed';ctx.font='bold 13px Arial,sans-serif';
+  ctx.textAlign='center';ctx.fillText('PARALLAX',W/2,72);
 
-  // Certificate of completion
-  ctx.fillStyle='#555a6e';ctx.font='11px -apple-system,sans-serif';
+  // Sub label
+  ctx.fillStyle='#555a6e';ctx.font='11px Arial,sans-serif';
   ctx.fillText('CERTIFICATE OF COMPLETION',W/2,100);
 
   // Divider
   ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(120,114);ctx.lineTo(W-120,114);ctx.stroke();
 
-  // Main text
-  ctx.fillStyle='#8b90a0';ctx.font='14px -apple-system,sans-serif';
-  ctx.fillText('This certifies that the holder has successfully completed',W/2,148);
+  // Body text
+  ctx.fillStyle='#8b90a0';ctx.font='14px Arial,sans-serif';
+  ctx.fillText('This certifies successful completion of',W/2,148);
 
-  ctx.fillStyle='#e2e4ed';ctx.font='700 28px -apple-system,sans-serif';
-  ctx.fillText('Cybersecurity Dual POV Simulation',W/2,190);
+  ctx.fillStyle='#e2e4ed';ctx.font='bold 26px Arial,sans-serif';
+  ctx.fillText('Cybersecurity Dual POV Simulation',W/2,186);
 
-  ctx.fillStyle='#8b90a0';ctx.font='14px -apple-system,sans-serif';
-  ctx.fillText('demonstrating knowledge of both offensive and defensive security techniques',W/2,220);
+  ctx.fillStyle='#8b90a0';ctx.font='13px Arial,sans-serif';
+  ctx.fillText('with demonstrated knowledge of offensive and defensive security techniques',W/2,214);
 
-  // Stats row
-  const stats=[['Scenarios',''+done.length+' / 6'],['Score',''+totalScore],['Accuracy',acc+'%'],['Techniques','48']];
-  const sw=(W-160)/stats.length;
+  // Stat boxes
+  const stats=[['Scenarios',done.length+' / 6'],['Score',''+totalScore],['Accuracy',acc+'%'],['Techniques','48']];
+  const sw=140,sg=12,startX=(W-(stats.length*sw+(stats.length-1)*sg))/2;
   stats.forEach(([l,v],i)=>{
-    const x=80+i*sw+sw/2;
-    ctx.fillStyle='#21242f';ctx.beginPath();ctx.roundRect(x-50,244,100,64,8);ctx.fill();
-    ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle='#4d9fff';ctx.font='700 20px -apple-system,sans-serif';ctx.fillText(v,x,274);
-    ctx.fillStyle='#555a6e';ctx.font='10px -apple-system,sans-serif';ctx.fillText(l.toUpperCase(),x,292);
+    const bx=startX+i*(sw+sg),by=234;
+    ctx.fillStyle='#21242f';rrect(bx,by,sw,60,8);ctx.fill();
+    ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;rrect(bx,by,sw,60,8);ctx.stroke();
+    ctx.fillStyle='#4d9fff';ctx.font='bold 20px Arial,sans-serif';ctx.fillText(v,bx+sw/2,264);
+    ctx.fillStyle='#555a6e';ctx.font='10px Arial,sans-serif';ctx.fillText(l.toUpperCase(),bx+sw/2,282);
   });
 
-  // Scenarios completed
-  ctx.fillStyle='#555a6e';ctx.font='11px -apple-system,sans-serif';
-  ctx.fillText('SCENARIOS COMPLETED',W/2,338);
-  const scNames=['OSINT Recon','Phishing','Network Intrusion','Social Engineering','Priv. Escalation','Ransomware'];
-  const pillW=110,pillH=26,pillGap=8;
-  const totalPillW=scNames.length*(pillW+pillGap)-pillGap;
+  // Scenarios label
+  ctx.fillStyle='#555a6e';ctx.font='11px Arial,sans-serif';
+  ctx.fillText('SCENARIOS COMPLETED',W/2,322);
+
+  // Scenario pills
+  const scNames=['OSINT Recon','Phishing','Net Intrusion','Social Eng.','Priv. Escalation','Ransomware'];
+  const pW=112,pH=26,pGap=6;
+  const totalPW=scNames.length*(pW+pGap)-pGap;
+  const pStartX=(W-totalPW)/2;
   scNames.forEach((n,i)=>{
-    const px=(W-totalPillW)/2+i*(pillW+pillGap);
+    const px=pStartX+i*(pW+pGap),py=334;
     const completed=done.includes(i);
     ctx.fillStyle=completed?'#133028':'#1a1d27';
-    ctx.strokeStyle=completed?'#3ecf8e44':'#2a2d3a';
-    ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(px,350,pillW,pillH,5);ctx.fill();ctx.stroke();
+    rrect(px,py,pW,pH,5);ctx.fill();
+    ctx.strokeStyle=completed?'rgba(62,207,142,0.3)':'#2a2d3a';
+    ctx.lineWidth=1;rrect(px,py,pW,pH,5);ctx.stroke();
     ctx.fillStyle=completed?'#3ecf8e':'#555a6e';
-    ctx.font='10px -apple-system,sans-serif';ctx.fillText((completed?'✓ ':'')+n,px+pillW/2,368);
+    ctx.font='10px Arial,sans-serif';
+    ctx.fillText((completed?'✓ ':'')+n,px+pW/2,py+17);
   });
 
   // Bottom divider
   ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(120,398);ctx.lineTo(W-120,398);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(120,378);ctx.lineTo(W-120,378);ctx.stroke();
 
   // Footer
-  ctx.fillStyle='#555a6e';ctx.font='12px -apple-system,sans-serif';
-  ctx.fillText('parallax.sarathg.me',W/2,426);
-  ctx.fillStyle='#3a3d4a';ctx.font='11px -apple-system,sans-serif';
-  ctx.fillText('Issued: '+date,W/2,448);
+  ctx.fillStyle='#4d9fff';ctx.font='12px Arial,sans-serif';
+  ctx.fillText('parallax.sarathg.me',W/2,406);
+  ctx.fillStyle='#555a6e';ctx.font='11px Arial,sans-serif';
+  ctx.fillText('Issued: '+date,W/2,426);
 
-  // Bottom accent
+  // Seal circle
+  ctx.beginPath();ctx.arc(W/2,480,36,0,Math.PI*2);
+  ctx.fillStyle='#21242f';ctx.fill();
+  ctx.strokeStyle='#4d9fff';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#4d9fff';ctx.font='bold 11px Arial,sans-serif';
+  ctx.fillText('VERIFIED',W/2,476);
+  ctx.fillStyle='#555a6e';ctx.font='9px Arial,sans-serif';
+  ctx.fillText('PARALLAX',W/2,490);
+
+  // Bottom accent bar
   ctx.fillStyle='#4d9fff';ctx.fillRect(20,H-23,W-40,3);
 }
 function downloadCert(){
